@@ -1,11 +1,27 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+<html lang="en">
 <head>
-    <title>Spring Security Example</title>
+    <meta charset="UTF-8" />
+    <title>iMovies</title>
+
+    <link rel="stylesheet" href="css/bootstrap.min.css" />
 </head>
 <body>
-<h1>Welcome!</h1>
 
-<p>Click <a th:href="@{/hello}">here</a> to see a greeting.</p>
+<div th:replace="fragments/header :: header"></div>
+
+<div class="container">
+
+    <h1>iMovies</h1>
+
+    <h1 th:inline="text">Hello [[${#httpServletRequest.remoteUser}]]!</h1>
+
+    <p>Click <a th:href="@{/login}">here</a> to login.</p>
+
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script type="text/javascript" src="js/bootstrap.min.js"></script>
+
 </body>
 </html>
