@@ -1,5 +1,6 @@
 package ch.eth.infsec;
 
+import org.apache.tomcat.jdbc.pool.DataSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -11,6 +12,10 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+
+    @Autowired
+    private DataSource dataSource;
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests().antMatchers("/css/**").permitAll().anyRequest().permitAll();
@@ -27,6 +32,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .logout()
                 .permitAll();
 
+        // Configure X509 authentication
+        // CN holds the username (in our case, email address)
+        // This email address is then looked up in the database.
+        // TODO: Something with revocation
+        http.x509().subjectPrincipalRegex("CN=(.*?),");
+
 
     }
 
@@ -38,12 +49,24 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
         auth
                 .jdbcAuthentication()
-                .authoritiesByUsernameQuery(getUserQuery());
+                .dataSource(dataSource)
+                .usersByUsernameQuery(getUserQuery())
+                .authoritiesByUsernameQuery(getDefaultAuthorityQuery());
+    }
+
+    /**
+     * Our database does not even support authorities. All users in the table have the normal USER role
+     * @return authority query
+     */
+    private String getDefaultAuthorityQuery() {
+        return "SELECT email as username, 'ROLE_USER' as authority "
+                + "FROM users "
+                + "WHERE email = ?";
     }
 
     private String getUserQuery() {
-        return "SELECT email as username, pwd as password "
-                + "FROM users"
+        return "SELECT email as username, pwd as password, true "
+                + "FROM users "
                 + "WHERE email = ?";
     }
 }
