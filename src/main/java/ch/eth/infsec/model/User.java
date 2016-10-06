@@ -12,6 +12,7 @@ import javax.persistence.Table;
 public class User {
 
     @Id
+    @Getter @Setter
     private String uid;
 
     @Getter @Setter
