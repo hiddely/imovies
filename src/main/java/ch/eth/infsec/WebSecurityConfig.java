@@ -1,20 +1,22 @@
 package ch.eth.infsec;
 
+import ch.eth.infsec.services.Sha1PasswordEncoder;
+import ch.eth.infsec.services.UserDetailsServiceImpl;
 import org.apache.tomcat.jdbc.pool.DataSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
-
-    @Autowired
-    private DataSource dataSource;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -47,26 +49,17 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .inMemoryAuthentication()
                 .withUser("user").password("password").roles("USER");*/
 
-        auth
-                .jdbcAuthentication()
-                .dataSource(dataSource)
-                .usersByUsernameQuery(getUserQuery())
-                .authoritiesByUsernameQuery(getDefaultAuthorityQuery());
+        auth.userDetailsService(userDetailsService()).passwordEncoder(passwordEncoder());
+
     }
 
-    /**
-     * Our database does not even support authorities. All users in the table have the normal USER role
-     * @return authority query
-     */
-    private String getDefaultAuthorityQuery() {
-        return "SELECT email as username, 'ROLE_USER' as authority "
-                + "FROM users "
-                + "WHERE email = ?";
+    @Bean
+    public UserDetailsService userDetailsService() {
+        return new UserDetailsServiceImpl();
     }
 
-    private String getUserQuery() {
-        return "SELECT email as username, pwd as password, true "
-                + "FROM users "
-                + "WHERE email = ?";
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new Sha1PasswordEncoder();
     }
 }
