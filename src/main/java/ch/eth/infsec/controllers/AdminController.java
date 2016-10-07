@@ -13,9 +13,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 @RequestMapping(path = "/admin")
 public class AdminController {
 
-    @Autowired
-    AdminService adminService;
-
     @RequestMapping(value = "/", method = RequestMethod.GET)
     public String welcome() {
         return "admin";
