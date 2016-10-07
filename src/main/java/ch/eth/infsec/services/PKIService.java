@@ -8,8 +8,8 @@ public interface PKIService {
     /**
      * Issues a new certificate for the given user.
      * @param user User object.
-     * @return PKCS#12 keystore object
+     * @return String path to p12 file
      */
-    public PKCS12 issueCertificate(User user);
+    public String issueCertificate(User user);
 
 }
