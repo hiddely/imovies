@@ -1,4 +1,4 @@
-# Vagrant virtual machine settings
+
 
 Use https://atlas.hashicorp.com/kaorimatz/boxes/ubuntu-16.04-amd64 as base image.
 
@@ -33,7 +33,7 @@ Create the DB as instructed in the project description:
 echo 'create database imovies' | mysql -uroot -proot
 
 Import the DB dump with:
-mysql -uroot -proot imovies < ./imovies_users.dump
+mysql -uroot -proot imovies < ./virtual-machines/imovies_users.dump
 
 Connect to the DB if you want to check if this worked: mysql -h 127.0.0.1 -u root -proot
 
