@@ -1,4 +1,4 @@
-# Vagrant virtual machine settings
+
 
 Use https://atlas.hashicorp.com/kaorimatz/boxes/ubuntu-16.04-amd64 as base image.
 
@@ -27,10 +27,15 @@ cd imvovies
 Set Spring configurations:
 cp imovies/src/main/resources/application.properties.example imovies/src/main/resources/application.properties
 
-Path it with user root and password root.
-Connect to the DB: mysql -h 127.0.0.1 -u root -p root
-Create the DB infsec with:
-create database infsec;
+Patch it with user root and password root.
+
+Create the DB as instructed in the project description:
+echo 'create database imovies' | mysql -uroot -proot
+
+Import the DB dump with:
+mysql -uroot -proot imovies < ./virtual-machines/imovies_users.dump
+
+Connect to the DB if you want to check if this worked: mysql -h 127.0.0.1 -u root -proot
 
 Run the maven project as instructed in the readme with (make sure you are in the imovies directory):
 mvn spring-boot:run
