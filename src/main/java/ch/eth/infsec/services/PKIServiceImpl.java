@@ -2,19 +2,20 @@ package ch.eth.infsec.services;
 
 import ch.eth.infsec.IMoviesApplication;
 import ch.eth.infsec.model.User;
+import ch.eth.infsec.util.CAUtil;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERBMPString;
+import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
-import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
-import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
-import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.asn1.x509.*;
+import org.bouncycastle.cert.CertIOException;
+import org.bouncycastle.cert.X509CRLHolder;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
-import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
-import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
+import org.bouncycastle.cert.jcajce.*;
 import org.bouncycastle.crypto.params.AsymmetricKeyParameter;
 import org.bouncycastle.crypto.util.PrivateKeyFactory;
 import org.bouncycastle.jcajce.PKCS12Key;
@@ -25,8 +26,11 @@ import org.bouncycastle.operator.DefaultDigestAlgorithmIdentifierFinder;
 import org.bouncycastle.operator.DefaultSignatureAlgorithmIdentifierFinder;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.bc.BcECContentSignerBuilder;
+import org.bouncycastle.util.CollectionStore;
+import org.bouncycastle.x509.X509Store;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
@@ -39,6 +43,8 @@ import java.math.BigInteger;
 import java.security.*;
 import java.security.cert.*;
 import java.security.cert.Certificate;
+import java.security.cert.Extension;
+import java.security.cert.X509Extension;
 import java.util.Date;
 
 @Service
@@ -51,36 +57,56 @@ public class PKIServiceImpl implements PKIService {
     final String caKeyStoreKeyPassword = "imovies";
     final String caKeyStoreAlias = "imovieskeystore";
 
+    private JcaCertStore certStore = null;
+
+    @Autowired
+    CAService caService;
+
     @Override
     public String issueCertificate(User user) {
-        KeyStore caKeyStore = caKeyStore();
-        Certificate caCertificate = null;
-        KeyPair caKeyPair = null;
-        try {
-            Key privateKey = caKeyStore.getKey(caKeyStoreAlias, caKeyStoreKeyPassword.toCharArray());
-            caCertificate = caKeyStore.getCertificate(caKeyStoreAlias);
-            caKeyPair = new KeyPair(caCertificate.getPublicKey(), (PrivateKey)privateKey);
-        } catch (KeyStoreException | NoSuchAlgorithmException | UnrecoverableKeyException e) {
-            throw new RuntimeException("Could not load key from keyStore", e);
-        }
+        CAService.Identity caIdentity = caService.getSigningIdentity();
 
-        KeyPair clientKeyPair = generateKeyPair(user);
-        Certificate clientCertificate = generateCertificate(user, clientKeyPair.getPublic(), caKeyPair, caCertificate);
-        return generatePKCS12(clientKeyPair, new Certificate[] { clientCertificate, caCertificate });
-
-        //return null;
+        KeyPair clientKeyPair = CAUtil.generateKeyPair();
+        Certificate clientCertificate = generateCertificate(user, clientKeyPair.getPublic(), caIdentity);
+        return generatePKCS12(clientKeyPair, new Certificate[] { clientCertificate, caIdentity.getCertificate() });
 
     }
 
+    @Override
+    public boolean isValid(Certificate certificate) {
+        return false;
+    }
+
+    @Override
+    public int numberOfCertificates() {
+        return 0;
+    }
+
+    @Override
+    public int numberOfCRL() {
+        return 0;
+    }
+
+    @Override
+    public int currentSerialNumber() {
+        return 0;
+    }
+
+    /**
+     * Generate client certificate for client to download/use.
+     * @param user client
+     * @param userKey client crypto identity
+     * @param caIdentity certificate authority that will sign
+     * @return client certificate
+     */
     private Certificate generateCertificate(
-            User user, PublicKey userKey, KeyPair caDetails, Certificate caCert) {
+            User user, PublicKey userKey, CAService.Identity caIdentity) {
 
         Date startDate = new Date(System.currentTimeMillis() - 24 * 60 * 60 * 1000);
         Date endDate = new Date(System.currentTimeMillis() + 365 * 24 * 60 * 60 * 1000);
 
-
         X509v3CertificateBuilder builder = new X509v3CertificateBuilder(
-                authority(caCert),
+                authority(caIdentity.getCertificate()),
                 BigInteger.ONE,
                 startDate,
                 endDate,
@@ -88,26 +114,25 @@ public class PKIServiceImpl implements PKIService {
                 SubjectPublicKeyInfo.getInstance(userKey.getEncoded())
         );
 
-        X509CertificateHolder certificateHolder = builder.build(contentSigner(caDetails));
-
         try {
+            JcaX509ExtensionUtils extensionUtils = new JcaX509ExtensionUtils();
+            builder.addExtension(org.bouncycastle.asn1.x509.Extension.authorityKeyIdentifier, true, extensionUtils.createAuthorityKeyIdentifier(caIdentity.getCertificate()));
+            builder.addExtension(org.bouncycastle.asn1.x509.Extension.subjectKeyIdentifier, true, extensionUtils.createSubjectKeyIdentifier(userKey));
+            builder.addExtension(org.bouncycastle.asn1.x509.Extension.basicConstraints, true, new BasicConstraints(0).toASN1Primitive());
+
+            X509CertificateHolder certificateHolder = builder.build(CAUtil.contentSigner(caIdentity.getKeyPair()));
+
             return new JcaX509CertificateConverter().getCertificate(certificateHolder);
-        } catch (CertificateException e) {
-            throw new RuntimeException("Could not convert certificate", e);
+        } catch (CertificateException | IOException | NoSuchAlgorithmException e) {
+            throw new PKIServiceException("Could not convert certificate", e);
         }
     }
 
-    private KeyPair generateKeyPair(User user) {
-        try {
-            KeyPairGenerator keyGen = KeyPairGenerator.getInstance("EC");
-            SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
-            keyGen.initialize(256, random);
-            return keyGen.generateKeyPair();
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("Invalid algorithm used to generate keypair!", e);
-        }
-    }
-
+    /**
+     * Users' certificate subject data.
+     * @param user to base data on
+     * @return subject data
+     */
     private X500Name subject(User user) {
         X500NameBuilder nameBuilder = new X500NameBuilder(BCStyle.INSTANCE);
         nameBuilder.addRDN(BCStyle.CN, user.getUid());
@@ -118,46 +143,24 @@ public class PKIServiceImpl implements PKIService {
     }
 
     /**
-     * Generate the authority. Will load from file later.
+     * Derive signing authority from certificate.
+     * @param certificate to base authority on
      * @return authority data
      */
     private X500Name authority(Certificate certificate) {
         try {
             return new JcaX509CertificateHolder((X509Certificate)certificate).getSubject();
         } catch (CertificateEncodingException e) {
-            throw new RuntimeException("Invalid certificate", e);
+            throw new PKIServiceException("Invalid certificate", e);
         }
-
-//        return new X500Name(((X509Certificate)certificate).getSubjectX500Principal().getName());
-
-        /*
-        X500NameBuilder nameBuilder = new X500NameBuilder(BCStyle.INSTANCE);
-        nameBuilder.addRDN(BCStyle.CN, "imovies.com");
-        nameBuilder.addRDN(BCStyle.O, "iMovies");
-        nameBuilder.addRDN(BCStyle.OU, "CA");
-        return nameBuilder.build();*/
     }
 
-    private KeyStore caKeyStore() {
-        // Load from keystore file
-        try {
-            Resource resource = new ClassPathResource("crypto/" + caKeyStoreFile);
-            InputStream is = resource.getInputStream();
-
-            logger.error("Inputstream: " + is.toString());
-
-            KeyStore store = KeyStore.getInstance("PKCS12");
-            store.load(is, caKeyStorePassword.toCharArray());
-
-            logger.error("Store: ", store.aliases().nextElement());
-
-            return store;
-        } catch (CertificateException | NoSuchAlgorithmException | KeyStoreException | IOException e) {
-            throw new RuntimeException("Could not load CA keystore", e);
-        }
-
-    }
-
+    /**
+     * Generate and store PKCS12 keystore for users keyPair and certificate chain, to be downloaded by user.
+     * @param keyPair user identity
+     * @param certificates chain
+     * @return path to stored pkcs12 file
+     */
     private String generatePKCS12(KeyPair keyPair, Certificate[] certificates) {
         //
         try {
@@ -176,22 +179,12 @@ public class PKIServiceImpl implements PKIService {
 
             return path;
         } catch (KeyStoreException e) {
-            throw new RuntimeException("Invalid provider BouncyCastle!", e);
+            throw new PKIServiceException("Invalid provider BouncyCastle!", e);
         } catch (CertificateException | NoSuchAlgorithmException | IOException e) {
-            throw new RuntimeException("Could not load null into keystore!", e);
+            throw new PKIServiceException("Could not load null into keystore!", e);
         }
 
     }
 
-    private ContentSigner contentSigner(KeyPair keyPair) {
-        AlgorithmIdentifier sigAlgId = new DefaultSignatureAlgorithmIdentifierFinder().find("SHA1withRSA");
-        AlgorithmIdentifier digAlgId = new DefaultDigestAlgorithmIdentifierFinder().find(sigAlgId);
-        try {
-            AsymmetricKeyParameter privateKeyAsymKeyParam = PrivateKeyFactory.createKey(keyPair.getPrivate().getEncoded());
-            return new BcECContentSignerBuilder(sigAlgId, digAlgId).build(privateKeyAsymKeyParam);
-        } catch (IOException | OperatorCreationException e) {
-            throw new RuntimeException("Invalid algorithm used to sign content!", e);
-        }
-    }
 
 }
