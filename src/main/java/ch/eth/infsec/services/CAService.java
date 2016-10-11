@@ -144,7 +144,7 @@ public class CAService {
             store.setKeyEntry(caKeyStoreRootAlias, rootKeyPair.getPrivate(), caKeyStoreRootKeyPassword.toCharArray(), rootChain);
             store.setKeyEntry(caKeyStoreIntermediateAlias, intermediateKeyPair.getPrivate(), caKeyStoreIntermediateKeyPassword.toCharArray(), intermediateChain);
 
-            String path = "src/main/resources/crypto/" + caKeyStoreFile;
+            String path = PKIServiceImpl.cryptoPath + "/" + caKeyStoreFile;
             File file = new File(path);
             file.createNewFile();
 
@@ -178,7 +178,7 @@ public class CAService {
     }
 
     public void saveCertitificate(X509Certificate certificate) throws IOException {
-        String path = "src/main/resources/crypto/certificates/" + certificate.getSerialNumber().toString();
+        String path = PKIServiceImpl.certificatePath + "/" + certificate.getSerialNumber().toString();
         FileWriter fileWriter = new FileWriter(path);
         PemWriter pemWriter = new PemWriter(fileWriter);
 
@@ -194,7 +194,10 @@ public class CAService {
         pemWriter.writeObject(generator);
         pemWriter.flush();
         pemWriter.close();
+    }
 
+    public int countCertificates() {
+        return new File(PKIServiceImpl.certificatePath).listFiles().length;
     }
 
     /**

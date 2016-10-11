@@ -27,6 +27,7 @@ import org.bouncycastle.operator.DefaultSignatureAlgorithmIdentifierFinder;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.bc.BcECContentSignerBuilder;
 import org.bouncycastle.util.CollectionStore;
+import org.bouncycastle.util.Integers;
 import org.bouncycastle.x509.X509Store;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,23 +47,24 @@ import java.security.cert.Certificate;
 import java.security.cert.Extension;
 import java.security.cert.X509Extension;
 import java.util.Date;
+import java.util.Properties;
 
 @Service
 public class PKIServiceImpl implements PKIService {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    final static String cryptoPath = "src/main/resources/crypto";
+    final static String certificatePath = cryptoPath + "/certificates";
+
     final String certStorePath = "imoviescertificicatestore.pem";
     final String certStorePassword = "imovies";
-
-    private CertStore certificateStore = null;
 
     @Autowired
     CAService caService;
 
     public PKIServiceImpl() throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
-        certificateStore = CertStore.getInstance("Collection", new CollectionCertStoreParameters(), "BC");
-        System.out.println("Certstore");
+
     }
 
     @Override
@@ -90,7 +92,7 @@ public class PKIServiceImpl implements PKIService {
 
     @Override
     public int numberOfCertificates() {
-        return 0;
+        return caService.countCertificates();
     }
 
     @Override
@@ -100,7 +102,50 @@ public class PKIServiceImpl implements PKIService {
 
     @Override
     public int currentSerialNumber() {
-        return 0;
+        return Integer.parseInt(loadProperty("serialNumber", "1"));
+    }
+
+    private String loadProperty(String name, String def) {
+        String ret = getProperties().getProperty(name);
+        return ret != null ? ret : def;
+    }
+
+    private Properties pkiProperties = null;
+
+    private Properties getProperties() {
+        if (pkiProperties != null) {
+            return pkiProperties;
+        }
+        File configFile = new File(cryptoPath + "/config.properties");
+
+        try {
+            configFile.createNewFile();
+
+            FileReader reader = new FileReader(configFile);
+            Properties props = new Properties();
+            props.load(reader);
+
+            reader.close();
+
+            pkiProperties = props;
+
+            return props;
+        } catch (IOException ex) {
+            throw new PKIServiceException("Could not load property file", ex);
+        }
+    }
+
+    private void saveProperties() {
+        if (pkiProperties != null) {
+            File configFile = new File(cryptoPath + "/config.properties");
+            try {
+                FileWriter writer = new FileWriter(configFile);
+                pkiProperties.store(writer, "ca settings");
+                writer.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     /*private void storeCertificate(X509Certificate certificate) {
@@ -139,6 +184,9 @@ public class PKIServiceImpl implements PKIService {
             builder.addExtension(org.bouncycastle.asn1.x509.Extension.basicConstraints, true, new BasicConstraints(0).toASN1Primitive());
 
             X509CertificateHolder certificateHolder = builder.build(CAUtil.contentSigner(caIdentity.getKeyPair()));
+
+            getProperties().setProperty("serialNumber", (currentSerialNumber() + 1) + "");
+            saveProperties();
 
             return new JcaX509CertificateConverter().getCertificate(certificateHolder);
         } catch (CertificateException | IOException | NoSuchAlgorithmException e) {
