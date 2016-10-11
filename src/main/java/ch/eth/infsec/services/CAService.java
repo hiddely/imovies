@@ -17,6 +17,10 @@ import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
+import org.bouncycastle.util.io.pem.PemGenerationException;
+import org.bouncycastle.util.io.pem.PemObject;
+import org.bouncycastle.util.io.pem.PemObjectGenerator;
+import org.bouncycastle.util.io.pem.PemWriter;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
@@ -35,8 +39,8 @@ public class CAService {
 
     private final String caKeyStoreFile = "imoviesca.pfx";
     private final String caKeyStorePassword = "imovies";
-    final String caKeyStoreRootKeyPassword = "imovies";
-    final String caKeyStoreRootAlias = "imovieskeystoreroot";
+    private final String caKeyStoreRootKeyPassword = "imovies";
+    private final String caKeyStoreRootAlias = "imovieskeystoreroot";
     private final String caKeyStoreIntermediateKeyPassword = "imovies";
     private final String caKeyStoreIntermediateAlias = "imovieskeystoreintermediate";
 
@@ -44,10 +48,10 @@ public class CAService {
 
         KeyStore caKeyStore = loadKeystore();
 
-        //if (caKeyStore == null) {
+        if (caKeyStore == null) {
             // generate new
             caKeyStore = generateCA();
-        //}
+        }
 
         try {
             Key privateKey = caKeyStore.getKey(caKeyStoreIntermediateAlias, caKeyStoreIntermediateKeyPassword.toCharArray());
@@ -171,6 +175,26 @@ public class CAService {
         nameBuilder.addRDN(BCStyle.O, "iMovies");
         nameBuilder.addRDN(BCStyle.OU, "Intermediate");
         return nameBuilder.build();
+    }
+
+    public void saveCertitificate(X509Certificate certificate) throws IOException {
+        String path = "src/main/resources/crypto/certificates/" + certificate.getSerialNumber().toString();
+        FileWriter fileWriter = new FileWriter(path);
+        PemWriter pemWriter = new PemWriter(fileWriter);
+
+        PemObjectGenerator generator = () -> {
+            try {
+                return new PemObject(certificate.getType(), certificate.getTBSCertificate());
+            } catch (CertificateEncodingException e) {
+                e.printStackTrace();
+                return null;
+            }
+        };
+
+        pemWriter.writeObject(generator);
+        pemWriter.flush();
+        pemWriter.close();
+
     }
 
     /**

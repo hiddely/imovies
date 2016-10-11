@@ -52,22 +52,33 @@ public class PKIServiceImpl implements PKIService {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    final String caKeyStoreFile = "imovieskeystore.pfx";
-    final String caKeyStorePassword = "imovies";
-    final String caKeyStoreKeyPassword = "imovies";
-    final String caKeyStoreAlias = "imovieskeystore";
+    final String certStorePath = "imoviescertificicatestore.pem";
+    final String certStorePassword = "imovies";
 
-    private JcaCertStore certStore = null;
+    private CertStore certificateStore = null;
 
     @Autowired
     CAService caService;
+
+    public PKIServiceImpl() throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
+        certificateStore = CertStore.getInstance("Collection", new CollectionCertStoreParameters(), "BC");
+        System.out.println("Certstore");
+    }
 
     @Override
     public String issueCertificate(User user) {
         CAService.Identity caIdentity = caService.getSigningIdentity();
 
         KeyPair clientKeyPair = CAUtil.generateKeyPair();
-        Certificate clientCertificate = generateCertificate(user, clientKeyPair.getPublic(), caIdentity);
+        X509Certificate clientCertificate = generateCertificate(user, clientKeyPair.getPublic(), caIdentity);
+
+        // store the certificate
+        try {
+            caService.saveCertitificate(clientCertificate);
+        } catch (IOException e) {
+            throw new PKIServiceException("Could not save client certificate", e);
+        }
+
         return generatePKCS12(clientKeyPair, new Certificate[] { clientCertificate, caIdentity.getCertificate() });
 
     }
@@ -92,6 +103,13 @@ public class PKIServiceImpl implements PKIService {
         return 0;
     }
 
+    /*private void storeCertificate(X509Certificate certificate) {
+        CertStore.
+        JcaCertStoreBuilder builder = new JcaCertStoreBuilder();
+        builder
+
+    }*/
+
     /**
      * Generate client certificate for client to download/use.
      * @param user client
@@ -99,7 +117,7 @@ public class PKIServiceImpl implements PKIService {
      * @param caIdentity certificate authority that will sign
      * @return client certificate
      */
-    private Certificate generateCertificate(
+    private X509Certificate generateCertificate(
             User user, PublicKey userKey, CAService.Identity caIdentity) {
 
         Date startDate = new Date(System.currentTimeMillis() - 24 * 60 * 60 * 1000);
@@ -107,7 +125,7 @@ public class PKIServiceImpl implements PKIService {
 
         X509v3CertificateBuilder builder = new X509v3CertificateBuilder(
                 authority(caIdentity.getCertificate()),
-                BigInteger.ONE,
+                new BigInteger(currentSerialNumber() + ""),
                 startDate,
                 endDate,
                 subject(user),
@@ -167,9 +185,6 @@ public class PKIServiceImpl implements PKIService {
 
             KeyStore store = KeyStore.getInstance("PKCS12");
 
-            X500Principal principalParent = ((X509Certificate)certificates[0]).getIssuerX500Principal();
-            X500Principal principalChild = ((X509Certificate)certificates[1]).getSubjectX500Principal();
-
             store.load(null, null);
             store.setKeyEntry("Client key", keyPair.getPrivate(), "password".toCharArray(), certificates);
 
@@ -183,8 +198,9 @@ public class PKIServiceImpl implements PKIService {
         } catch (CertificateException | NoSuchAlgorithmException | IOException e) {
             throw new PKIServiceException("Could not load null into keystore!", e);
         }
-
     }
+
+
 
 
 }
