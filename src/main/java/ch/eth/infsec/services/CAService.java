@@ -70,15 +70,11 @@ public class CAService {
      */
     private KeyStore loadKeystore() {
         try {
-            Resource resource = new ClassPathResource("crypto/" + caKeyStoreFile);
-            if (!resource.exists()) {
+            File file = new File(CAUtil.cryptoPath + "/" + caKeyStoreFile);
+            if (!file.exists()) {
                 return null;
             }
-            InputStream is = resource.getInputStream();
-
-            if (is == null) {
-                return null;
-            }
+            InputStream is = new FileInputStream(file);
 
             KeyStore store = KeyStore.getInstance("PKCS12");
             store.load(is, caKeyStorePassword.toCharArray());
@@ -144,7 +140,7 @@ public class CAService {
             store.setKeyEntry(caKeyStoreRootAlias, rootKeyPair.getPrivate(), caKeyStoreRootKeyPassword.toCharArray(), rootChain);
             store.setKeyEntry(caKeyStoreIntermediateAlias, intermediateKeyPair.getPrivate(), caKeyStoreIntermediateKeyPassword.toCharArray(), intermediateChain);
 
-            String path = PKIServiceImpl.cryptoPath + "/" + caKeyStoreFile;
+            String path = CAUtil.cryptoPath + "/" + caKeyStoreFile;
             File file = new File(path);
             file.createNewFile();
 
@@ -175,29 +171,6 @@ public class CAService {
         nameBuilder.addRDN(BCStyle.O, "iMovies");
         nameBuilder.addRDN(BCStyle.OU, "Intermediate");
         return nameBuilder.build();
-    }
-
-    public void saveCertitificate(X509Certificate certificate) throws IOException {
-        String path = PKIServiceImpl.certificatePath + "/" + certificate.getSerialNumber().toString();
-        FileWriter fileWriter = new FileWriter(path);
-        PemWriter pemWriter = new PemWriter(fileWriter);
-
-        PemObjectGenerator generator = () -> {
-            try {
-                return new PemObject(certificate.getType(), certificate.getTBSCertificate());
-            } catch (CertificateEncodingException e) {
-                e.printStackTrace();
-                return null;
-            }
-        };
-
-        pemWriter.writeObject(generator);
-        pemWriter.flush();
-        pemWriter.close();
-    }
-
-    public int countCertificates() {
-        return new File(PKIServiceImpl.certificatePath).listFiles().length;
     }
 
     /**

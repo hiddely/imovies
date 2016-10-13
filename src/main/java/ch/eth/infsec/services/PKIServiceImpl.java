@@ -54,18 +54,14 @@ public class PKIServiceImpl implements PKIService {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    final static String cryptoPath = "src/main/resources/crypto";
-    final static String certificatePath = cryptoPath + "/certificates";
-
     final String certStorePath = "imoviescertificicatestore.pem";
     final String certStorePassword = "imovies";
 
     @Autowired
     CAService caService;
 
-    public PKIServiceImpl() throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
-
-    }
+    @Autowired
+    CertificateService certificateService;
 
     @Override
     public String issueCertificate(User user) {
@@ -76,8 +72,8 @@ public class PKIServiceImpl implements PKIService {
 
         // store the certificate
         try {
-            caService.saveCertitificate(clientCertificate);
-        } catch (IOException e) {
+            certificateService.saveCertificate(clientCertificate);
+        } catch (IOException | GeneralSecurityException e) {
             throw new PKIServiceException("Could not save client certificate", e);
         }
 
@@ -92,7 +88,7 @@ public class PKIServiceImpl implements PKIService {
 
     @Override
     public int numberOfCertificates() {
-        return caService.countCertificates();
+        return certificateService.countCertificates();
     }
 
     @Override
@@ -102,51 +98,10 @@ public class PKIServiceImpl implements PKIService {
 
     @Override
     public int currentSerialNumber() {
-        return Integer.parseInt(loadProperty("serialNumber", "1"));
+        return Integer.parseInt(certificateService.loadProperty("serialNumber", "1"));
     }
 
-    private String loadProperty(String name, String def) {
-        String ret = getProperties().getProperty(name);
-        return ret != null ? ret : def;
-    }
 
-    private Properties pkiProperties = null;
-
-    private Properties getProperties() {
-        if (pkiProperties != null) {
-            return pkiProperties;
-        }
-        File configFile = new File(cryptoPath + "/config.properties");
-
-        try {
-            configFile.createNewFile();
-
-            FileReader reader = new FileReader(configFile);
-            Properties props = new Properties();
-            props.load(reader);
-
-            reader.close();
-
-            pkiProperties = props;
-
-            return props;
-        } catch (IOException ex) {
-            throw new PKIServiceException("Could not load property file", ex);
-        }
-    }
-
-    private void saveProperties() {
-        if (pkiProperties != null) {
-            File configFile = new File(cryptoPath + "/config.properties");
-            try {
-                FileWriter writer = new FileWriter(configFile);
-                pkiProperties.store(writer, "ca settings");
-                writer.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
 
     /*private void storeCertificate(X509Certificate certificate) {
         CertStore.
@@ -185,8 +140,8 @@ public class PKIServiceImpl implements PKIService {
 
             X509CertificateHolder certificateHolder = builder.build(CAUtil.contentSigner(caIdentity.getKeyPair()));
 
-            getProperties().setProperty("serialNumber", (currentSerialNumber() + 1) + "");
-            saveProperties();
+            certificateService.getProperties().setProperty("serialNumber", (currentSerialNumber() + 1) + "");
+            certificateService.saveProperties();
 
             return new JcaX509CertificateConverter().getCertificate(certificateHolder);
         } catch (CertificateException | IOException | NoSuchAlgorithmException e) {
