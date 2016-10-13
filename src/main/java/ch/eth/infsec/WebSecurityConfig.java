@@ -2,6 +2,7 @@ package ch.eth.infsec;
 
 import ch.eth.infsec.services.Sha1PasswordEncoder;
 import ch.eth.infsec.services.UserDetailsServiceImpl;
+import ch.eth.infsec.services.UserDetailsX509ServiceImpl;
 import org.apache.tomcat.jdbc.pool.DataSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -27,7 +28,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/", "/home").permitAll()
                 .anyRequest().authenticated()
                 .and()
-                .x509().subjectPrincipalRegex("CN=(.*?)").userDetailsService(userDetailsService())
+                .x509().subjectPrincipalRegex("CN=(.*?)").userDetailsService(userDetailsX509Service())
                 .and()
                 .formLogin()
                 .loginPage("/login")
@@ -59,6 +60,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     public UserDetailsService userDetailsService() {
         return new UserDetailsServiceImpl();
+    }
+
+    @Bean
+    public UserDetailsService userDetailsX509Service() {
+        return new UserDetailsX509ServiceImpl();
     }
 
     @Bean

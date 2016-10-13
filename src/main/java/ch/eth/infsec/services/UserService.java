@@ -10,6 +10,8 @@ public interface UserService {
 
     User findByEmail(String email);
 
+    User findByUid(String uid);
+
     User updateUser(UserForm userForm);
 
 }
