@@ -147,10 +147,10 @@ public class PKIServiceImpl implements PKIService {
      */
     private X500Name subject(User user) {
         X500NameBuilder nameBuilder = new X500NameBuilder(BCStyle.INSTANCE);
-        nameBuilder.addRDN(BCStyle.CN, user.getUid());
-        nameBuilder.addRDN(BCStyle.EmailAddress, user.getEmail());
         nameBuilder.addRDN(BCStyle.O, "iMovies");
         nameBuilder.addRDN(BCStyle.OU, "Personal");
+        nameBuilder.addRDN(BCStyle.EmailAddress, user.getEmail());
+        nameBuilder.addRDN(BCStyle.CN, user.getUid());
         return nameBuilder.build();
     }
 

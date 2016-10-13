@@ -28,7 +28,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/", "/home").permitAll()
                 .anyRequest().authenticated()
                 .and()
-                .x509().subjectPrincipalRegex("CN=(.*?)").userDetailsService(userDetailsX509Service())
+                .x509().subjectPrincipalRegex("CN=(.*?),").userDetailsService(userDetailsX509Service())
                 .and()
                 .formLogin()
                 .loginPage("/login")
