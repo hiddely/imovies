@@ -21,7 +21,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
         User user = userService.findByEmail(s);
         if (user == null) {
-            return null;
+            throw new UsernameNotFoundException("User " + s + " not found!");
         }
         return new ch.eth.infsec.model.UserDetails(user);
     }

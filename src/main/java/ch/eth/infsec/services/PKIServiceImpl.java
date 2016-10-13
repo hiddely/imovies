@@ -1,41 +1,22 @@
 package ch.eth.infsec.services;
 
-import ch.eth.infsec.IMoviesApplication;
 import ch.eth.infsec.model.User;
 import ch.eth.infsec.util.CAUtil;
-import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERBMPString;
-import org.bouncycastle.asn1.DEROctetString;
-import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.DERSequence;
+import org.bouncycastle.asn1.misc.MiscObjectIdentifiers;
+import org.bouncycastle.asn1.misc.NetscapeCertType;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.asn1.x509.*;
-import org.bouncycastle.cert.CertIOException;
-import org.bouncycastle.cert.X509CRLHolder;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.*;
-import org.bouncycastle.crypto.params.AsymmetricKeyParameter;
-import org.bouncycastle.crypto.util.PrivateKeyFactory;
-import org.bouncycastle.jcajce.PKCS12Key;
-import org.bouncycastle.jcajce.provider.keystore.PKCS12;
-import org.bouncycastle.jce.interfaces.PKCS12BagAttributeCarrier;
-import org.bouncycastle.operator.ContentSigner;
-import org.bouncycastle.operator.DefaultDigestAlgorithmIdentifierFinder;
-import org.bouncycastle.operator.DefaultSignatureAlgorithmIdentifierFinder;
-import org.bouncycastle.operator.OperatorCreationException;
-import org.bouncycastle.operator.bc.BcECContentSignerBuilder;
-import org.bouncycastle.util.CollectionStore;
-import org.bouncycastle.util.Integers;
-import org.bouncycastle.x509.X509Store;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
-import sun.security.x509.X509CertImpl;
 
 
 import javax.security.auth.x500.X500Principal;
@@ -136,7 +117,17 @@ public class PKIServiceImpl implements PKIService {
             JcaX509ExtensionUtils extensionUtils = new JcaX509ExtensionUtils();
             builder.addExtension(org.bouncycastle.asn1.x509.Extension.authorityKeyIdentifier, true, extensionUtils.createAuthorityKeyIdentifier(caIdentity.getCertificate()));
             builder.addExtension(org.bouncycastle.asn1.x509.Extension.subjectKeyIdentifier, true, extensionUtils.createSubjectKeyIdentifier(userKey));
-            builder.addExtension(org.bouncycastle.asn1.x509.Extension.basicConstraints, true, new BasicConstraints(0).toASN1Primitive());
+            builder.addExtension(org.bouncycastle.asn1.x509.Extension.basicConstraints, true, new BasicConstraints(false).toASN1Primitive());
+
+            ASN1EncodableVector purposes = new ASN1EncodableVector();
+            purposes.add(KeyPurposeId.id_kp_clientAuth);
+            purposes.add(KeyPurposeId.anyExtendedKeyUsage);
+            builder.addExtension(org.bouncycastle.asn1.x509.Extension.extendedKeyUsage, false,
+                    new DERSequence(purposes));
+
+            builder.addExtension(MiscObjectIdentifiers.netscapeCertType,
+                    false, new NetscapeCertType(NetscapeCertType.sslClient
+                            | NetscapeCertType.smime));
 
             X509CertificateHolder certificateHolder = builder.build(CAUtil.contentSigner(caIdentity.getKeyPair()));
 

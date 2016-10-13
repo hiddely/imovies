@@ -27,6 +27,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/", "/home").permitAll()
                 .anyRequest().authenticated()
                 .and()
+                .x509().subjectPrincipalRegex("CN=(.*?)").userDetailsService(userDetailsService())
+                .and()
                 .formLogin()
                 .loginPage("/login")
                 .defaultSuccessUrl("/account", true)
@@ -39,8 +41,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         // CN holds the username (in our case, email address)
         // This email address is then looked up in the database.
         // TODO: Something with revocation
-        http.x509().subjectPrincipalRegex("CN=(.*?),");
-
+        //http
+        //        .antMatcher("/")
+        //        .x509().subjectPrincipalRegex("CN=(.*?),").userDetailsService(userDetailsService());
 
     }
 
@@ -51,7 +54,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .withUser("user").password("password").roles("USER");*/
 
         auth.userDetailsService(userDetailsService()).passwordEncoder(passwordEncoder());
-
     }
 
     @Bean

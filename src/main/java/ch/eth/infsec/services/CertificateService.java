@@ -22,10 +22,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.*;
 import java.math.BigInteger;
-import java.security.GeneralSecurityException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
+import java.security.*;
 import java.security.cert.*;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
@@ -120,6 +117,27 @@ public class CertificateService {
         pemWriter.writeObject(generator);
         pemWriter.flush();
         pemWriter.close();
+
+        saveTruststore(certificate);
+    }
+
+    private void saveTruststore(X509Certificate certificate) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException {
+        KeyStore store = KeyStore.getInstance("JKS");
+
+        final String password = "imoviestruststore";
+
+        File trustStore = new File(CAUtil.cryptoPath + "/trust.jks");
+        trustStore.createNewFile();
+
+        if (trustStore.length() > 0) {
+            store.load(new FileInputStream(trustStore), password.toCharArray());
+        } else {
+            store.load(null, null);
+        }
+        store.setCertificateEntry(certificate.getSerialNumber().toString(), certificate);
+
+        FileOutputStream fOut = new FileOutputStream(trustStore);
+        store.store(fOut, password.toCharArray());
     }
 
     private void saveCrl() throws IOException {

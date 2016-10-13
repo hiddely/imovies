@@ -8,6 +8,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
 import javax.annotation.PostConstruct;
+import java.security.SecureRandom;
 import java.security.Security;
 
 @SpringBootApplication
