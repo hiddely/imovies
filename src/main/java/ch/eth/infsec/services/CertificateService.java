@@ -32,33 +32,22 @@ import java.util.Properties;
 @Service
 public class CertificateService {
 
-    CertStore certStore;
+    KeyStore trustStore;
+    File trustStoreFile = new File(CAUtil.cryptoPath + "/trust.jks");
+    final String trustStorePassword = "imoviestruststore";
+
     X509CRLHolder crl;
-    File certificateFolder = new File(CAUtil.certificatePath);
     File crlFile = new File(CAUtil.cryptoPath + "/revoked.crl");
 
     public CertificateService() throws GeneralSecurityException, IOException {
-        certificateFolder.mkdirs(); // ensure folders are created
 
-        JcaCertStoreBuilder builder = new JcaCertStoreBuilder();
-        builder.setProvider("BC");
-        builder.setType("Collection");
-
-        File[] certs = certificateFolder.listFiles();
-        if (certs != null) {
-            for (File cert : certs) {
-                try {
-                    PemReader reader = new PemReader(new InputStreamReader(new FileInputStream(cert)));
-                    //Certificate certificate = fact.generateCertificate(new FileInputStream(cert));
-                    builder.addCertificate(new X509CertificateHolder(reader.readPemObject().getContent()));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+        trustStore = KeyStore.getInstance("JKS");
+        trustStoreFile.createNewFile();
+        if (trustStoreFile.length() > 0) {
+            trustStore.load(new FileInputStream(trustStoreFile), trustStorePassword.toCharArray());
+        } else {
+            trustStore.load(null, null);
         }
-
-        certStore = builder.build();
-
 
     }
 
@@ -89,55 +78,9 @@ public class CertificateService {
     }
 
     public void saveCertificate(X509Certificate certificate) throws IOException, GeneralSecurityException {
-
-        // Add certificate to current store, save to file.
-        ArrayList<X509CertificateHolder> holders = new ArrayList<>();
-        for (Certificate c : certStore.getCertificates(new X509CertSelector())) {
-            holders.add(new X509CertificateHolder(c.getEncoded()));
-        }
-
-        JcaCertStoreBuilder builder = new JcaCertStoreBuilder();
-        builder.addCertificates(new CollectionStore<>(holders));
-        builder.addCertificate(new X509CertificateHolder(certificate.getEncoded()));
-        certStore = builder.build();
-
-        String path = CAUtil.certificatePath + "/" + certificate.getSerialNumber().toString();
-        FileWriter fileWriter = new FileWriter(path);
-        PemWriter pemWriter = new PemWriter(fileWriter);
-
-        PemObjectGenerator generator = () -> {
-            try {
-                return new PemObject(certificate.getType(), certificate.getEncoded());
-            } catch (CertificateEncodingException e) {
-                e.printStackTrace();
-                return null;
-            }
-        };
-
-        pemWriter.writeObject(generator);
-        pemWriter.flush();
-        pemWriter.close();
-
-        saveTruststore(certificate);
-    }
-
-    private void saveTruststore(X509Certificate certificate) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException {
-        KeyStore store = KeyStore.getInstance("JKS");
-
-        final String password = "imoviestruststore";
-
-        File trustStore = new File(CAUtil.cryptoPath + "/trust.jks");
-        trustStore.createNewFile();
-
-        if (trustStore.length() > 0) {
-            store.load(new FileInputStream(trustStore), password.toCharArray());
-        } else {
-            store.load(null, null);
-        }
-        store.setCertificateEntry(certificate.getSerialNumber().toString(), certificate);
-
-        FileOutputStream fOut = new FileOutputStream(trustStore);
-        store.store(fOut, password.toCharArray());
+        trustStore.setCertificateEntry(certificate.getSerialNumber().toString(), certificate);
+        FileOutputStream fOut = new FileOutputStream(trustStoreFile);
+        trustStore.store(fOut, trustStorePassword.toCharArray());
     }
 
     private void saveCrl() throws IOException {
@@ -158,8 +101,8 @@ public class CertificateService {
         pemWriter.close();
     }
 
-    public int countCertificates() {
-        return certificateFolder.listFiles().length;
+    public int countCertificates() throws KeyStoreException {
+        return trustStore.size();
     }
 
     public void incrementProperty(String name, String def) {

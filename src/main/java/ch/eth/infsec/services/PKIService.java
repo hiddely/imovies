@@ -3,6 +3,7 @@ package ch.eth.infsec.services;
 import ch.eth.infsec.model.User;
 import org.bouncycastle.jcajce.provider.keystore.PKCS12;
 
+import java.security.KeyStoreException;
 import java.security.cert.Certificate;
 
 public interface PKIService {
@@ -25,7 +26,7 @@ public interface PKIService {
      * Get the number of issued certificates.
      * @return number of issued certificates
      */
-    int numberOfCertificates();
+    int numberOfCertificates() throws KeyStoreException;
 
     /**
      * Get the number of revoked certificates.

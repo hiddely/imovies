@@ -35,9 +35,6 @@ public class PKIServiceImpl implements PKIService {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    final String certStorePath = "imoviescertificicatestore.pem";
-    final String certStorePassword = "imovies";
-
     @Autowired
     CAService caService;
 
@@ -68,7 +65,7 @@ public class PKIServiceImpl implements PKIService {
     }
 
     @Override
-    public int numberOfCertificates() {
+    public int numberOfCertificates() throws KeyStoreException {
         return certificateService.countCertificates();
     }
 
@@ -82,14 +79,6 @@ public class PKIServiceImpl implements PKIService {
         return Integer.parseInt(certificateService.loadProperty("serialNumber", "1"));
     }
 
-
-
-    /*private void storeCertificate(X509Certificate certificate) {
-        CertStore.
-        JcaCertStoreBuilder builder = new JcaCertStoreBuilder();
-        builder
-
-    }*/
 
     /**
      * Generate client certificate for client to download/use.
