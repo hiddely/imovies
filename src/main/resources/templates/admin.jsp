@@ -1,3 +1,7 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+         pageEncoding="ISO-8859-1"%>
+<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -14,16 +18,17 @@
 
 <div class="container">
 
+    asdfasdfadsfa
     <div class="row">
         <h1>Admin Page</h1>
         <div class="section-manage">
-            <h3>Number of issued certificates</h3> ${counter}
+            <h3>Number of issued certificates: ${counter}/></h3>
         </div>
         <div class="section-manage">
-            <h3>Number of revoked certificates</h3>
+            <h3>Number of revoked certificates: </h3>
         </div>
         <div class="section-manage">
-            <h3>Current serial number</h3>
+            <h3>Current serial number: </h3>
         </div>
     </div>
 

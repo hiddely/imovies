@@ -54,7 +54,7 @@ public class PKIServiceImpl implements PKIService {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    final static String cryptoPath = "src/main/resources/crypto";
+    public final static String cryptoPath = "src/main/resources/crypto";
     final static String certificatePath = cryptoPath + "/certificates";
 
     final String certStorePath = "imoviescertificicatestore.pem";

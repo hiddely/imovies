@@ -15,6 +15,7 @@
             <ul class="nav navbar-nav">
                 <li class="active"><a th:href="@{/}">Home</a></li>
                 <li><a th:href="@{/account}">Account</a></li>
+                <li><a th:href="@{/admin/}">Admin</a></li>
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 <li th:if="not ${#authorization.expression('isAuthenticated()')}"><a th:href="@{/login}">Log in</a></li>
