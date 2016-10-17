@@ -1,7 +1,7 @@
 package ch.eth.infsec.controllers;
 
 import ch.eth.infsec.model.UserDetails;
-import ch.eth.infsec.services.PKIService;
+import ch.eth.infsec.services.pki.PKIService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
@@ -12,6 +12,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -38,6 +39,18 @@ public class CertificateController {
 
         InputStreamResource isr = new InputStreamResource(new FileInputStream(file));
         return new ResponseEntity<InputStreamResource>(isr, respHeaders, HttpStatus.OK);
+    }
+
+    @RequestMapping(path = "/revoke")
+    public String revoke(RedirectAttributes redirectAttributes) {
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (pkiService.revokeCertificate(userDetails.getUser())) {
+            redirectAttributes.addAttribute("revoked", true);
+            return "redirect:/account";
+        }
+        redirectAttributes.addAttribute("revokefailed", true);
+        return "redirect:/account";
+
 
     }
 

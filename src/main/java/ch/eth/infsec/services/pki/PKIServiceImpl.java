@@ -1,4 +1,4 @@
-package ch.eth.infsec.services;
+package ch.eth.infsec.services.pki;
 
 import ch.eth.infsec.model.User;
 import ch.eth.infsec.util.CAUtil;
@@ -19,16 +19,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 
-import javax.security.auth.x500.X500Principal;
 import java.io.*;
 import java.math.BigInteger;
 import java.security.*;
 import java.security.cert.*;
 import java.security.cert.Certificate;
-import java.security.cert.Extension;
-import java.security.cert.X509Extension;
 import java.util.Date;
-import java.util.Properties;
 
 @Service
 public class PKIServiceImpl implements PKIService {
@@ -55,8 +51,31 @@ public class PKIServiceImpl implements PKIService {
             throw new PKIServiceException("Could not save client certificate", e);
         }
 
-        return generatePKCS12(clientKeyPair, new Certificate[] { clientCertificate, caIdentity.getCertificate() });
+        return generatePKCS12(user, clientKeyPair, new Certificate[] { clientCertificate, caIdentity.getCertificate() });
 
+    }
+
+    @Override
+    public boolean revokeCertificate(User user) {
+        try {
+            if (!certificateService.hasCertificate(user.getUid())) {
+                return false;
+            }
+            X509Certificate certificate = certificateService.getCertificate(user.getUid());
+            CAService.Identity caIdentity = caService.getSigningIdentity();
+
+            certificateService.revokeCertificate(
+                    new JcaX509CertificateHolder(caIdentity.getCertificate()).getSubject(),
+                    caIdentity,
+                    certificate
+            );
+
+            logger.info("Revoking certificate " + certificate.getSerialNumber().toString() + " for user UID " + user.getUid());
+
+            return true;
+        } catch (NoSuchAlgorithmException | CertificateEncodingException | KeyStoreException | IOException e) {
+            throw new PKIServiceException("Could not revoke certificate", e);
+        }
     }
 
     @Override
@@ -65,13 +84,17 @@ public class PKIServiceImpl implements PKIService {
     }
 
     @Override
-    public int numberOfCertificates() throws KeyStoreException {
-        return certificateService.countCertificates();
+    public int numberOfCertificates() {
+        try {
+            return certificateService.countCertificates();
+        } catch (KeyStoreException e) {
+            throw new PKIServiceException("Could count certificates", e);
+        }
     }
 
     @Override
     public int numberOfCRL() {
-        return 0;
+        return certificateService.countCRL();
     }
 
     @Override
@@ -158,11 +181,12 @@ public class PKIServiceImpl implements PKIService {
 
     /**
      * Generate and store PKCS12 keystore for users keyPair and certificate chain, to be downloaded by user.
+     * @param user employee who this is for
      * @param keyPair user identity
      * @param certificates chain
      * @return path to stored pkcs12 file
      */
-    private String generatePKCS12(KeyPair keyPair, Certificate[] certificates) {
+    private String generatePKCS12(User user, KeyPair keyPair, Certificate[] certificates) {
         //
         try {
 
@@ -171,9 +195,13 @@ public class PKIServiceImpl implements PKIService {
             store.load(null, null);
             store.setKeyEntry("Client key", keyPair.getPrivate(), "password".toCharArray(), certificates);
 
-            String path = "id.p12";
-            FileOutputStream fOut = new FileOutputStream(new File(path));
+            String path = user.getUid() + "-" + System.currentTimeMillis() + ".p12";
+            File fileOutput = new File(path);
+            fileOutput.createNewFile();
+            FileOutputStream fOut = new FileOutputStream(fileOutput);
             store.store(fOut, "password".toCharArray());
+
+            logger.info("Generated client identity and saved at " + path);
 
             return path;
         } catch (KeyStoreException e) {

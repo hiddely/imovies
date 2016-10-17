@@ -1,10 +1,13 @@
-package ch.eth.infsec.services;
+package ch.eth.infsec.services.pki;
 
 import ch.eth.infsec.model.User;
 import org.bouncycastle.jcajce.provider.keystore.PKCS12;
 
+import java.io.IOException;
 import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
 
 public interface PKIService {
 
@@ -14,6 +17,13 @@ public interface PKIService {
      * @return String path to p12 file
      */
     String issueCertificate(User user);
+
+    /**
+     * Revoke a certificate.
+     * @param user owner
+     * @return whether it succeeded (it existed)
+     */
+    boolean revokeCertificate(User user);
 
     /**
      * Determine whether the given certificate is valid, i.e. it has been issued by us and has not been revoked.
@@ -26,7 +36,7 @@ public interface PKIService {
      * Get the number of issued certificates.
      * @return number of issued certificates
      */
-    int numberOfCertificates() throws KeyStoreException;
+    int numberOfCertificates();
 
     /**
      * Get the number of revoked certificates.

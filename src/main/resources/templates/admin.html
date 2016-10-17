@@ -20,6 +20,23 @@
         <h1>Admin Page</h1>
         <div class="section-manage">
 
+            <div class="statis">
+                <table class="table">
+                    <tr>
+                        <td>Number of certificates</td>
+                        <td th:text="${details.numberOfCertificates}"></td>
+                    </tr>
+                    <tr>
+                        <td>Number of revokes</td>
+                        <td th:text="${details.numberOfRevokes}"></td>
+                    </tr>
+                    <tr>
+                        <td>Serial number</td>
+                        <td th:text="${details.serialNumber}"></td>
+                    </tr>
+                </table>
+            </div>
+
         </div>
     </div>
 

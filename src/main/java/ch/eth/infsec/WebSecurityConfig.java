@@ -3,10 +3,12 @@ package ch.eth.infsec;
 import ch.eth.infsec.services.Sha1PasswordEncoder;
 import ch.eth.infsec.services.UserDetailsServiceImpl;
 import ch.eth.infsec.services.UserDetailsX509ServiceImpl;
+import ch.eth.infsec.services.X509AuthenticationProvider;
 import org.apache.tomcat.jdbc.pool.DataSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
@@ -25,7 +27,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http.authorizeRequests().antMatchers("/js/**").permitAll().anyRequest().permitAll();
         http
                 .authorizeRequests()
-                .antMatchers("/", "/home").permitAll()
+                .antMatchers("/", "/home", "/admin").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .x509().subjectPrincipalRegex("CN=(.*?),").userDetailsService(userDetailsX509Service())
@@ -54,7 +56,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .inMemoryAuthentication()
                 .withUser("user").password("password").roles("USER");*/
 
-        auth.userDetailsService(userDetailsService()).passwordEncoder(passwordEncoder());
+        auth.authenticationProvider(authenticationProvider())
+                .userDetailsService(userDetailsService())
+                .passwordEncoder(passwordEncoder());
+    }
+
+    @Bean
+    public AuthenticationProvider authenticationProvider() {
+        return new X509AuthenticationProvider();
     }
 
     @Bean

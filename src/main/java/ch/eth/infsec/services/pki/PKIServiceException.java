@@ -1,4 +1,4 @@
-package ch.eth.infsec.services;
+package ch.eth.infsec.services.pki;
 
 public class PKIServiceException extends RuntimeException {
 

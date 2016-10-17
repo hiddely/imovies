@@ -1,22 +1,21 @@
-package ch.eth.infsec.services;
+package ch.eth.infsec.services.pki;
 
 import ch.eth.infsec.util.CAUtil;
+import org.bouncycastle.asn1.BERGenerator;
+import org.bouncycastle.asn1.BEROctetStringGenerator;
+import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x500.style.BCStyle;
+import org.bouncycastle.asn1.x500.style.IETFUtils;
 import org.bouncycastle.asn1.x509.*;
 import org.bouncycastle.asn1.x509.CRLReason;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.cert.*;
-import org.bouncycastle.cert.jcajce.JcaCertStore;
-import org.bouncycastle.cert.jcajce.JcaCertStoreBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
-import org.bouncycastle.cms.CMSSignedDataGenerator;
 import org.bouncycastle.jce.provider.X509CRLParser;
-import org.bouncycastle.openssl.PEMParser;
-import org.bouncycastle.util.CollectionStore;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemObjectGenerator;
-import org.bouncycastle.util.io.pem.PemReader;
 import org.bouncycastle.util.io.pem.PemWriter;
 import org.springframework.stereotype.Service;
 
@@ -24,8 +23,6 @@ import java.io.*;
 import java.math.BigInteger;
 import java.security.*;
 import java.security.cert.*;
-import java.security.cert.Certificate;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.Properties;
 
@@ -49,9 +46,15 @@ public class CertificateService {
             trustStore.load(null, null);
         }
 
+        if (crlFile.exists()) {
+            // load crl
+            InputStream in = new FileInputStream(crlFile);
+            crl = new X509CRLHolder(in);
+        }
+
     }
 
-    public void revokeCertificate(X500Name caName, CAService.Identity caIdentity, BigInteger serialNumber, X509CRL existingCrl) throws NoSuchAlgorithmException, CertificateEncodingException, IOException {
+    public void revokeCertificate(X500Name caName, CAService.Identity caIdentity, X509Certificate certificate) throws NoSuchAlgorithmException, CertificateEncodingException, IOException, KeyStoreException {
         Date now = new Date();
         X509v2CRLBuilder crlBuilder = new X509v2CRLBuilder(caName, now);
         crlBuilder.setNextUpdate(new Date(System.currentTimeMillis() + 365 * 24 * 60 * 60 * 1000));
@@ -66,43 +69,47 @@ public class CertificateService {
 
         incrementProperty("crlNumber", "1");
 
-        if (existingCrl != null) {
+        if (crl != null) {
             crlBuilder.addCRL(crl);
         }
 
-        crlBuilder.addCRLEntry(serialNumber, now, CRLReason.privilegeWithdrawn);
+        crlBuilder.addCRLEntry(certificate.getSerialNumber(), now, CRLReason.privilegeWithdrawn);
 
         crl = crlBuilder.build(CAUtil.contentSigner(caIdentity.getKeyPair()));
+
+        // remove from truststore
+        trustStore.deleteEntry(extractCN(certificate));
 
         saveCrl();
     }
 
     public void saveCertificate(X509Certificate certificate) throws IOException, GeneralSecurityException {
-        trustStore.setCertificateEntry(certificate.getSerialNumber().toString(), certificate);
+        trustStore.setCertificateEntry(extractCN(certificate), certificate);
         FileOutputStream fOut = new FileOutputStream(trustStoreFile);
         trustStore.store(fOut, trustStorePassword.toCharArray());
     }
 
+    public X509Certificate getCertificate(String cn) throws KeyStoreException {
+        return (X509Certificate)trustStore.getCertificate(cn);
+    }
+
+    public boolean hasCertificate(String cn) throws KeyStoreException {
+        return trustStore.containsAlias(cn);
+    }
+
     private void saveCrl() throws IOException {
-        FileWriter fileWriter = new FileWriter(crlFile);
-        PemWriter pemWriter = new PemWriter(fileWriter);
-
-        PemObjectGenerator generator = () -> {
-            try {
-                return new PemObject("CRL", crl.getEncoded());
-            } catch (IOException e) {
-                e.printStackTrace();
-                return null;
-            }
-        };
-
-        pemWriter.writeObject(generator);
-        pemWriter.flush();
-        pemWriter.close();
+        byte[] encoded = crl.getEncoded();
+        FileOutputStream stream = new FileOutputStream(crlFile);
+        stream.write(encoded);
+        stream.close();
     }
 
     public int countCertificates() throws KeyStoreException {
         return trustStore.size();
+    }
+
+    public int countCRL() {
+        return crl == null ? 0 : crl.getRevokedCertificates().size();
     }
 
     public void incrementProperty(String name, String def) {
@@ -149,5 +156,12 @@ public class CertificateService {
                 e.printStackTrace();
             }
         }
+    }
+
+    private String extractCN(X509Certificate cert) throws CertificateEncodingException {
+        X500Name x500name = new JcaX509CertificateHolder(cert).getSubject();
+        RDN cn = x500name.getRDNs(BCStyle.CN)[0];
+
+        return IETFUtils.valueToString(cn.getFirst().getValue());
     }
 }

@@ -1,14 +1,13 @@
 package ch.eth.infsec;
 
-import ch.eth.infsec.services.CAService;
+import ch.eth.infsec.services.pki.CAService;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 
 import javax.annotation.PostConstruct;
-import java.security.SecureRandom;
 import java.security.Security;
 
 @SpringBootApplication

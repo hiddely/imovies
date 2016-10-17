@@ -1,6 +1,7 @@
 package ch.eth.infsec.services;
 
 import ch.eth.infsec.model.User;
+import ch.eth.infsec.services.pki.PKIService;
 import ch.eth.infsec.util.CAUtil;
 import org.junit.Before;
 import org.junit.Test;
