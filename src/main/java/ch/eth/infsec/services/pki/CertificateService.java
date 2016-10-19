@@ -30,11 +30,11 @@ import java.util.Properties;
 public class CertificateService {
 
     KeyStore trustStore;
-    File trustStoreFile = new File(CAUtil.cryptoPath + "/trust.jks");
+    File trustStoreFile = new File(CAUtil.cryptoPath + "trust.jks");
     final String trustStorePassword = "imoviestruststore";
 
     X509CRLHolder crl;
-    File crlFile = new File(CAUtil.cryptoPath + "/revoked.crl");
+    File crlFile = new File(CAUtil.cryptoPath + "revoked.crl");
 
     public CertificateService() throws GeneralSecurityException, IOException {
 
@@ -78,7 +78,7 @@ public class CertificateService {
         crl = crlBuilder.build(CAUtil.contentSigner(caIdentity.getKeyPair()));
 
         // remove from truststore
-        trustStore.deleteEntry(extractCN(certificate));
+        //trustStore.deleteEntry(extractCN(certificate));
 
         saveCrl();
     }
@@ -93,8 +93,8 @@ public class CertificateService {
         return (X509Certificate)trustStore.getCertificate(cn);
     }
 
-    public boolean hasCertificate(String cn) throws KeyStoreException {
-        return trustStore.containsAlias(cn);
+    public boolean hasCertificate(X509Certificate certificate) throws KeyStoreException {
+        return crl.getRevokedCertificate(certificate.getSerialNumber()) != null;
     }
 
     private void saveCrl() throws IOException {
@@ -126,7 +126,7 @@ public class CertificateService {
         if (pkiProperties != null) {
             return pkiProperties;
         }
-        File configFile = new File(CAUtil.cryptoPath + "/config.properties");
+        File configFile = new File(CAUtil.cryptoPath + "config.properties");
 
         try {
             configFile.createNewFile();
@@ -147,7 +147,7 @@ public class CertificateService {
 
     public void saveProperties() {
         if (pkiProperties != null) {
-            File configFile = new File(CAUtil.cryptoPath + "/config.properties");
+            File configFile = new File(CAUtil.cryptoPath + "config.properties");
             try {
                 FileWriter writer = new FileWriter(configFile);
                 pkiProperties.store(writer, "ca settings");

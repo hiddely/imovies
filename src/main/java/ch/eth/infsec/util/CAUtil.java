@@ -18,11 +18,8 @@ import java.security.*;
  */
 public class CAUtil {
 
-    final static String crlPath = "crypto/crl.pem";
-
-    public final static String cryptoPath = "src/main/resources/crypto";
-    public final static String certificatePath = cryptoPath + "/certificates";
-
+    public final static String cryptoPath = "src/main/resources/crypto/";
+    public final static String certificatePath = cryptoPath + "certificates/";
 
     /**
      * Get a new, random keypair.

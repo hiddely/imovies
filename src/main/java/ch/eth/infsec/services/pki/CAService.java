@@ -59,7 +59,7 @@ public class CAService {
      */
     private KeyStore loadKeystore() {
         try {
-            File file = new File(CAUtil.cryptoPath + "/" + caKeyStoreFile);
+            File file = new File(CAUtil.cryptoPath + caKeyStoreFile);
             if (!file.exists()) {
                 return null;
             }
@@ -129,7 +129,7 @@ public class CAService {
             store.setKeyEntry(caKeyStoreRootAlias, rootKeyPair.getPrivate(), caKeyStoreRootKeyPassword.toCharArray(), rootChain);
             store.setKeyEntry(caKeyStoreIntermediateAlias, intermediateKeyPair.getPrivate(), caKeyStoreIntermediateKeyPassword.toCharArray(), intermediateChain);
 
-            String path = CAUtil.cryptoPath + "/" + caKeyStoreFile;
+            String path = CAUtil.cryptoPath + caKeyStoreFile;
             File file = new File(path);
             file.createNewFile();
 

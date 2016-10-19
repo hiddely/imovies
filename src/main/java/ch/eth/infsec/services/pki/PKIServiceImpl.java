@@ -58,10 +58,10 @@ public class PKIServiceImpl implements PKIService {
     @Override
     public boolean revokeCertificate(User user) {
         try {
-            if (!certificateService.hasCertificate(user.getUid())) {
+            X509Certificate certificate = certificateService.getCertificate(user.getUid());
+            if (certificate == null || !certificateService.hasCertificate(certificate)) {
                 return false;
             }
-            X509Certificate certificate = certificateService.getCertificate(user.getUid());
             CAService.Identity caIdentity = caService.getSigningIdentity();
 
             certificateService.revokeCertificate(
@@ -195,7 +195,7 @@ public class PKIServiceImpl implements PKIService {
             store.load(null, null);
             store.setKeyEntry("Client key", keyPair.getPrivate(), "password".toCharArray(), certificates);
 
-            String path = user.getUid() + "-" + System.currentTimeMillis() + ".p12";
+            String path = CAUtil.certificatePath + user.getUid() + "-" + System.currentTimeMillis() + ".p12";
             File fileOutput = new File(path);
             fileOutput.createNewFile();
             FileOutputStream fOut = new FileOutputStream(fileOutput);
