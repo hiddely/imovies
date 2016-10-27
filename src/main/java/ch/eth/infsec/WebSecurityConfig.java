@@ -46,7 +46,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         // TODO: Something with revocation
         //http
         //        .antMatcher("/")
-        //        .x509().subjectPrincipalRegex("CN=(.*?),").userDetailsService(userDetailsService());
+        //        .x509().subjectPrincipalRegex("CN=(.*?),");//.userDetailsService(userDetailsService());
 
     }
 

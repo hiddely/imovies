@@ -94,7 +94,7 @@ public class CertificateService {
     }
 
     public boolean hasCertificate(X509Certificate certificate) throws KeyStoreException {
-        return crl.getRevokedCertificate(certificate.getSerialNumber()) != null;
+        return crl == null || crl.getRevokedCertificate(certificate.getSerialNumber()) != null;
     }
 
     private void saveCrl() throws IOException {

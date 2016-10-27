@@ -195,15 +195,19 @@ public class PKIServiceImpl implements PKIService {
             store.load(null, null);
             store.setKeyEntry("Client key", keyPair.getPrivate(), "password".toCharArray(), certificates);
 
-            String path = CAUtil.certificatePath + user.getUid() + "-" + System.currentTimeMillis() + ".p12";
-            File fileOutput = new File(path);
+            String path = CAUtil.cryptoPath + "certificates/";
+            String filename =  user.getUid() + "-" + System.currentTimeMillis() + ".p12";
+            String fullFile = path + filename;
+            File folder = new File(path);
+            folder.mkdirs();
+            File fileOutput = new File(fullFile);
             fileOutput.createNewFile();
             FileOutputStream fOut = new FileOutputStream(fileOutput);
             store.store(fOut, "password".toCharArray());
 
-            logger.info("Generated client identity and saved at " + path);
+            logger.info("Generated client identity and saved at " + fullFile);
 
-            return path;
+            return fullFile;
         } catch (KeyStoreException e) {
             throw new PKIServiceException("Invalid provider BouncyCastle!", e);
         } catch (CertificateException | NoSuchAlgorithmException | IOException e) {

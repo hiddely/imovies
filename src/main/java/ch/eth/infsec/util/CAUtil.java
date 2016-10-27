@@ -19,7 +19,6 @@ import java.security.*;
 public class CAUtil {
 
     public final static String cryptoPath = "src/main/resources/crypto/";
-    public final static String certificatePath = cryptoPath + "certificates/";
 
     /**
      * Get a new, random keypair.
