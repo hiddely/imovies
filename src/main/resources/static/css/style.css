@@ -2,3 +2,8 @@
   background-color: #eaeaea;
   padding: 30px;
 }
+
+.certificate-list {
+  height: 400px;
+  overflow-y: scroll;
+}

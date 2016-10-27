@@ -24,6 +24,7 @@ import java.math.BigInteger;
 import java.security.*;
 import java.security.cert.*;
 import java.security.cert.Certificate;
+import java.util.Collection;
 import java.util.Date;
 
 @Service
@@ -102,6 +103,14 @@ public class PKIServiceImpl implements PKIService {
         return Integer.parseInt(certificateService.loadProperty("serialNumber", "1"));
     }
 
+    @Override
+    public Collection<X509Certificate> getAllCertificates() {
+        try {
+            return certificateService.getAllCertificates();
+        } catch (KeyStoreException e) {
+            throw new PKIServiceException("Could not load all certificates", e);
+        }
+    }
 
     /**
      * Generate client certificate for client to download/use.

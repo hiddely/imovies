@@ -20,7 +20,7 @@
         <h1>Admin Page</h1>
         <div class="section-manage">
 
-            <div class="statis">
+            <div class="status">
                 <table class="table">
                     <tr>
                         <td>Number of certificates</td>
@@ -37,6 +37,27 @@
                 </table>
             </div>
 
+        </div>
+
+    </div>
+    <div class="row">
+        <h2>Certificate list</h2>
+        <div class="section-certificate-list">
+            <div class="certificate-list">
+                <table class="table">
+                    <tr>
+                        <td>#</td>
+                        <td>Serial</td>
+                        <td>DN</td>
+                    </tr>
+                    <tr th:each="cert,iterationStatus  : ${certificates}">
+                        <td th:text="${iterationStatus.count}">1</td>
+                        <td th:text="${cert.getSerialNumber().toString()}">001</td>
+                        <td th:text="${cert.getSubjectDN().toString()}">Name</td>
+                    </tr>
+
+                </table>
+            </div>
         </div>
     </div>
 

@@ -1,2 +1,4 @@
 certificates/*
 config.properties
+revoked.crl
+trust.jks

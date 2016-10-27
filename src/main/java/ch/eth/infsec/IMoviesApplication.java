@@ -49,7 +49,9 @@ public class IMoviesApplication {
 					public void customize(Connector connector) {
 						Http11NioProtocol handler = (Http11NioProtocol) connector.getProtocolHandler();
 						File file = new File("src/main/resources/crypto/revoked.crl");
-						handler.setCrlFile(file.getAbsolutePath());
+						if (file.exists()) {
+							handler.setCrlFile(file.getAbsolutePath());
+						}
 					}
 				});
 			}

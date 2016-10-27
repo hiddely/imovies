@@ -23,8 +23,11 @@ import java.io.*;
 import java.math.BigInteger;
 import java.security.*;
 import java.security.cert.*;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 @Service
 public class CertificateService {
@@ -95,6 +98,16 @@ public class CertificateService {
 
     public boolean hasCertificate(X509Certificate certificate) throws KeyStoreException {
         return crl == null || crl.getRevokedCertificate(certificate.getSerialNumber()) != null;
+    }
+
+    public Collection<X509Certificate> getAllCertificates() throws KeyStoreException {
+        return Collections.list(trustStore.aliases()).stream().map(alias -> {
+            try {
+                return (X509Certificate)trustStore.getCertificate(alias);
+            } catch (KeyStoreException e) {
+                throw new RuntimeException("Problem extracting all certificates");
+            }
+        }).collect(Collectors.toList());
     }
 
     private void saveCrl() throws IOException {

@@ -8,6 +8,8 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509Certificate;
+import java.util.Collection;
 
 public interface PKIService {
 
@@ -49,5 +51,8 @@ public interface PKIService {
      * @return serial number
      */
     int currentSerialNumber();
+
+
+    Collection<X509Certificate> getAllCertificates();
 
 }

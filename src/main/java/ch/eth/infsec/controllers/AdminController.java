@@ -8,6 +8,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import java.security.cert.X509Certificate;
+
 @Controller
 @RequestMapping(path = "/admin")
 public class AdminController {
@@ -26,8 +28,11 @@ public class AdminController {
                 )
         );
 
+        model.addAttribute("certificates",
+                pkiService.getAllCertificates()
+        );
+
         return "admin";
     }
-
 
 }
