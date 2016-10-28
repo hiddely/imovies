@@ -19,7 +19,7 @@ public class AdminController {
     PKIService pkiService;
 
     @RequestMapping(value = { "/", ""}, method = RequestMethod.GET)
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public String welcome(Model model) {
 
         model.addAttribute("details",

@@ -37,12 +37,12 @@ public class AuthenticationX509UserDetailsService implements AuthenticationUserD
 
         // check if user is admin
         String userType = extractFromDN(subjectDN, patternOU);
-        if (userType.startsWith("Admin")) {
+        if (userType.equals("Admin")) {
             System.out.println("User is admin!");
 
             userDetails.setAuthorities(AuthorityUtils
                     .commaSeparatedStringToAuthorityList("ROLE_USER,ROLE_ADMIN"));
-        } else if (userType.startsWith("Personal")) {
+        } else if (userType.equals("Personal")) {
             userDetails.setAuthorities(AuthorityUtils
                     .commaSeparatedStringToAuthorityList("ROLE_USER"));
         } else {
