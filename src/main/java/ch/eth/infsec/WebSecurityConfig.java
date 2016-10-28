@@ -1,9 +1,6 @@
 package ch.eth.infsec;
 
-import ch.eth.infsec.services.Sha1PasswordEncoder;
-import ch.eth.infsec.services.UserDetailsServiceImpl;
-import ch.eth.infsec.services.UserDetailsX509ServiceImpl;
-import ch.eth.infsec.services.X509AuthenticationProvider;
+import ch.eth.infsec.services.*;
 import org.apache.tomcat.jdbc.pool.DataSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -15,8 +12,10 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.userdetails.AuthenticationUserDetailsService;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 
 @Configuration
 @EnableWebSecurity
@@ -32,7 +31,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/", "/home", "/admin").permitAll()
                 .anyRequest().authenticated()
                 .and()
-                .x509().subjectPrincipalRegex("CN=(.*?),").userDetailsService(userDetailsX509Service())
+                .x509().subjectPrincipalRegex("CN=(.*?),").authenticationUserDetailsService(userDetailsX509Service())
                 .and()
                 .formLogin()
                 .loginPage("/login")
@@ -74,8 +73,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     @Bean
-    public UserDetailsService userDetailsX509Service() {
-        return new UserDetailsX509ServiceImpl();
+    public AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> userDetailsX509Service() {
+        return new AuthenticationX509UserDetailsService();
     }
 
     @Bean
