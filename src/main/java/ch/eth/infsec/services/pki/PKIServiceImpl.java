@@ -39,7 +39,7 @@ public class PKIServiceImpl implements PKIService {
     CertificateService certificateService;
 
     @Override
-    public String issueCertificate(User user) {
+    public String issueCertificate(User user, String password) {
         CAService.Identity caIdentity = caService.getSigningIdentity();
 
         KeyPair clientKeyPair = CAUtil.generateKeyPair();
@@ -52,7 +52,7 @@ public class PKIServiceImpl implements PKIService {
             throw new PKIServiceException("Could not save client certificate", e);
         }
 
-        return generatePKCS12(user, clientKeyPair, new Certificate[] { clientCertificate, caIdentity.getCertificate() });
+        return generatePKCS12(user, password, clientKeyPair, new Certificate[] { clientCertificate, caIdentity.getCertificate() });
 
     }
 
@@ -191,18 +191,19 @@ public class PKIServiceImpl implements PKIService {
     /**
      * Generate and store PKCS12 keystore for users keyPair and certificate chain, to be downloaded by user.
      * @param user employee who this is for
+     * @param password password to encrypt with
      * @param keyPair user identity
      * @param certificates chain
      * @return path to stored pkcs12 file
      */
-    private String generatePKCS12(User user, KeyPair keyPair, Certificate[] certificates) {
+    private String generatePKCS12(User user, String password, KeyPair keyPair, Certificate[] certificates) {
         //
         try {
 
             KeyStore store = KeyStore.getInstance("PKCS12");
 
             store.load(null, null);
-            store.setKeyEntry("Client key", keyPair.getPrivate(), "password".toCharArray(), certificates);
+            store.setKeyEntry("Client key", keyPair.getPrivate(), password.toCharArray(), certificates);
 
             String path = CAUtil.cryptoPath + "certificates/";
             String filename =  user.getUid() + "-" + System.currentTimeMillis() + ".p12";
@@ -212,7 +213,7 @@ public class PKIServiceImpl implements PKIService {
             File fileOutput = new File(fullFile);
             fileOutput.createNewFile();
             FileOutputStream fOut = new FileOutputStream(fileOutput);
-            store.store(fOut, "password".toCharArray());
+            store.store(fOut, password.toCharArray());
 
             logger.info("Generated client identity and saved at " + fullFile);
 

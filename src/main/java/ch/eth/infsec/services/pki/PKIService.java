@@ -16,9 +16,10 @@ public interface PKIService {
     /**
      * Issues a new certificate for the given user.
      * @param user User object.
+     * @param password User-provided password to encrypt the identity with
      * @return String path to p12 file
      */
-    String issueCertificate(User user);
+    String issueCertificate(User user, String password);
 
     /**
      * Revoke a certificate.

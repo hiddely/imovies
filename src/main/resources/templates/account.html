@@ -44,7 +44,15 @@
                 <p><button type="submit" value="Submit">Submit</button> <button type="reset">Reset</button></p>
             </form>
 
-            <a class="btn btn-primary" th:href="@{/certificate/issue}">Download PCKS#12 certificate!</a>
+            <form action="#" th:action="@{/certificate/issue}" method="post" class="form">
+
+                <div class="form-group">
+                    <label for="password">Encryption password</label>
+                    <input type="text" name="password" id="password" class="form-control" />
+                </div>
+
+                <button type="submit" class="btn btn-primary" th:href="@{/certificate/issue}">Download PCKS#12 certificate!</button>
+            </form>
             <a class="btn btn-warning" th:href="@{/certificate/revoke}">Revoke certificate</a>
         </div>
     </div>
