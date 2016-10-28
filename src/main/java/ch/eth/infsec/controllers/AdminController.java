@@ -3,6 +3,7 @@ package ch.eth.infsec.controllers;
 import ch.eth.infsec.model.CADetails;
 import ch.eth.infsec.services.pki.PKIService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,6 +19,7 @@ public class AdminController {
     PKIService pkiService;
 
     @RequestMapping(value = { "/", ""}, method = RequestMethod.GET)
+    @PreAuthorize("hasAuthority('ADMIN')")
     public String welcome(Model model) {
 
         model.addAttribute("details",

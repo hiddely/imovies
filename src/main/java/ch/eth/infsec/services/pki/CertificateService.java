@@ -96,8 +96,8 @@ public class CertificateService {
         return (X509Certificate)trustStore.getCertificate(cn);
     }
 
-    public boolean hasCertificate(X509Certificate certificate) throws KeyStoreException {
-        return crl == null || crl.getRevokedCertificate(certificate.getSerialNumber()) != null;
+    public boolean hasRevokedCertificate(X509Certificate certificate) throws KeyStoreException {
+        return crl != null && crl.getRevokedCertificate(certificate.getSerialNumber()) != null;
     }
 
     public Collection<X509Certificate> getAllCertificates() throws KeyStoreException {

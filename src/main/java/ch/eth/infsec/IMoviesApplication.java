@@ -5,6 +5,7 @@ import org.apache.catalina.connector.Connector;
 import org.apache.coyote.ProtocolHandler;
 import org.apache.coyote.http11.AbstractHttp11JsseProtocol;
 import org.apache.coyote.http11.Http11NioProtocol;
+import org.apache.tomcat.util.net.SSLHostConfig;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -48,9 +49,30 @@ public class IMoviesApplication {
 					@Override
 					public void customize(Connector connector) {
 						Http11NioProtocol handler = (Http11NioProtocol) connector.getProtocolHandler();
-						File file = new File("src/main/resources/crypto/revoked.crl");
-						if (file.exists()) {
-							handler.setCrlFile(file.getAbsolutePath());
+						File crlFile = new File("src/main/resources/crypto/revoked.crl");
+						File caFile = new File("src/main/resources/crypto/imoviesca.pfx");
+						File trustFile = new File("src/main/resources/crypto/trust.jks");
+						if (crlFile.exists()) {
+							/*SSLHostConfig config = new SSLHostConfig();
+							config.setCertificateKeystoreFile("serverIdentity.p12");
+							config.setCertificateKeystorePassword("imovies");
+							config.setCertificateKeystoreType("PKCS12");
+							config.setCertificateKeyAlias("imovies.com");
+							config.*/
+
+							//SSLHostConfig config = connector.findSslHostConfigs()[0];
+
+							//config.setCertificateRevocationListFile(crlFile.getAbsolutePath());
+							//config.setTruststoreFile(trustFile.getAbsolutePath());
+							//config.setTruststorePassword("imoviestruststore");
+							//config.setTruststoreProvider("JKS");
+							//config.setHostName("imovies.com");
+
+							//connector.addSslHostConfig(config);
+							handler.setCrlFile(crlFile.getAbsolutePath());
+
+							//connector.
+							System.out.println("Hi");
 						}
 					}
 				});

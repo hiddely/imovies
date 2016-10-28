@@ -60,7 +60,7 @@ public class PKIServiceImpl implements PKIService {
     public boolean revokeCertificate(User user) {
         try {
             X509Certificate certificate = certificateService.getCertificate(user.getUid());
-            if (certificate == null || !certificateService.hasCertificate(certificate)) {
+            if (certificate == null || certificateService.hasRevokedCertificate(certificate)) {
                 return false;
             }
             CAService.Identity caIdentity = caService.getSigningIdentity();

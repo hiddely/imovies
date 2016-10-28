@@ -15,7 +15,7 @@
 <div class="container">
 
     <div class="row">
-        <div th:if="${revoked}" class="alert alert-warning">
+        <div th:text="${param.q[0]}" th:unless="${param.q == null}" class="alert alert-warning">
             Your certificate has been revoked
         </div>
         <div th:if="${revokefailed}" class="alert alert-error">

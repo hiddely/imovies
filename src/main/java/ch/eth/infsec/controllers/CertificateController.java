@@ -42,14 +42,12 @@ public class CertificateController {
     }
 
     @RequestMapping(path = "/revoke")
-    public String revoke(RedirectAttributes redirectAttributes) {
+    public String revoke() {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (pkiService.revokeCertificate(userDetails.getUser())) {
-            redirectAttributes.addAttribute("revoked", true);
-            return "redirect:/account";
+            return "redirect:/account?q=Your certificate has been revoked";
         }
-        redirectAttributes.addAttribute("revokefailed", true);
-        return "redirect:/account";
+        return "redirect:/account?q=Your certificate was not revoked, because you don't have any";
 
 
     }
