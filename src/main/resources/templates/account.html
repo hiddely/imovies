@@ -21,39 +21,48 @@
         <div th:if="${revokefailed}" class="alert alert-error">
             Your certificate could not be revoked, because none exists.
         </div>
-        <h1>Manage account</h1>
+        <h1>Account</h1>
         <div class="section-manage">
 
-            <form action="#" th:action="@{/account}" th:object="${account}" method="post" class="form">
-                <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="text" th:field="*{email}" class="form-control" />
-                </div>
-                <div class="form-group">
-                    <label for="lastname">Lastname</label>
-                    <input type="text" th:field="*{lastname}" class="form-control" />
-                </div>
-                <div class="form-group">
-                    <label for="firstname">Firstname</label>
-                    <input type="text" th:field="*{firstname}" class="form-control" />
-                </div>
-                <div class="form-group">
-                    <label for="password">New password (leave empty for no change)</label>
-                    <input type="text" th:field="*{password}" class="form-control" />
-                </div>
-                <p><button type="submit" value="Submit">Submit</button> <button type="reset">Reset</button></p>
-            </form>
+            <div class="col-md-6">
+                <h3>Account data</h3>
+                <form action="#" th:action="@{/account}" th:object="${account}" method="post" class="form" id="form-data">
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="text" th:field="*{email}" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label for="lastname">Lastname</label>
+                        <input type="text" th:field="*{lastname}" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label for="firstname">Firstname</label>
+                        <input type="text" th:field="*{firstname}" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label for="password">New password (leave empty for no change)</label>
+                        <input type="text" th:field="*{password}" class="form-control" />
+                    </div>
+                    <p><button class="btn btn-primary" type="submit" value="Submit">Submit</button> <button class="btn btn-danger" type="reset">Reset</button></p>
+                </form>
 
-            <form action="#" th:action="@{/certificate/issue}" method="post" class="form">
+            </div>
+            <div class="col-md-6">
+                <h3>Certificates</h3>
+                <form action="#" th:action="@{/certificate/issue}" method="post" class="form" id="form-cert">
 
-                <div class="form-group">
-                    <label for="password">Encryption password</label>
-                    <input type="text" name="password" id="password" class="form-control" />
-                </div>
+                    <div class="form-group">
+                        <label for="issue-password">Encryption password</label>
+                        <input type="text" name="password" id="issue-password" class="form-control" />
+                    </div>
 
-                <button type="submit" class="btn btn-primary" th:href="@{/certificate/issue}">Download PCKS#12 certificate!</button>
-            </form>
-            <a class="btn btn-warning" th:href="@{/certificate/revoke}">Revoke certificate</a>
+                    <button type="submit" id="issueButton" class="btn btn-primary" th:href="@{/certificate/issue}" disabled="disabled">Download PCKS#12 certificate!</button>
+                    <a class="btn btn-danger" th:href="@{/certificate/revoke}">Revoke certificate</a>
+                </form>
+            </div>
+
+
+
         </div>
     </div>
 
@@ -62,6 +71,30 @@
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 <script type="text/javascript" src="js/bootstrap.min.js"></script>
+
+<script type="text/javascript">
+
+    $(document).ready(function() {
+        $('#issue-password').keyup(function() {
+
+            alert("aa");
+
+            var empty = false;
+            $('#issue-password').each(function() {
+                if ($(this).val().length == 0) {
+                    empty = true;
+                }
+            });
+
+            if (empty) {
+                $('#issueButton').attr('disabled', 'disabled');
+            } else {
+                $('#issueButton').removeAttr('disabled');
+            }
+        });
+    });
+
+</script>
 
 </body>
 </html>
