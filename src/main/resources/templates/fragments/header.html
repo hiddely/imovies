@@ -14,11 +14,16 @@
         <div class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
                 <li class="active"><a th:href="@{/}">Home</a></li>
-                <li><a th:href="@{/account}">Account</a></li>
+                <li th:if="${#authorization.expression('isAuthenticated()')}"><a th:href="@{/account}">Account</a></li>
+                <li sec:authorize="hasRole('ROLE_ADMIN')"><a th:href="@{/admin}">Admin</a></li>
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 <li th:if="not ${#authorization.expression('isAuthenticated()')}"><a th:href="@{/login}">Log in</a></li>
-                <li th:if="${#authorization.expression('isAuthenticated()')}"><a th:href="@{/logout}">Log out</a></li>
+                <li th:if="${#authorization.expression('isAuthenticated()')}">
+                    <form th:action="@{/logout}" method="post">
+                        <button class="btn btn-link" type="submit">Logout</button>
+                    </form>
+                </li>
             </ul>
         </div>
     </div>

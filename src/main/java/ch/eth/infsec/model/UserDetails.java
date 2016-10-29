@@ -12,14 +12,16 @@ public class UserDetails implements org.springframework.security.core.userdetail
     @Getter @Setter
     private User user;
 
+    @Setter
+    private Collection<? extends GrantedAuthority> authorities;
+
     public UserDetails(User user) {
         this.user = user;
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return AuthorityUtils
-                .commaSeparatedStringToAuthorityList("ROLE_USER"); // default to normal user role
+        return authorities;
     }
 
     @Override

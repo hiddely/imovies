@@ -4,3 +4,13 @@ spring.datasource.password=root
 
 spring.datasource.driver-class-name=com.mysql.jdbc.Driver
 spring.jpa.database-platform=org.hibernate.dialect.MySQL5InnoDBDialect
+
+server.port=8443
+server.ssl.key-store=serverIdentity.p12
+server.ssl.key-store-password=imovies
+server.ssl.key-store-type=PKCS12
+server.ssl.key-alias=imovies.com
+server.ssl.client-auth=want
+server.ssl.trust-store=src/main/resources/crypto/trust.jks
+server.ssl.trust-store-password=imoviestruststore
+server.ssl.trust-store-type=JKS

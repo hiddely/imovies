@@ -15,6 +15,12 @@
 <div class="container">
 
     <div class="row">
+        <div th:text="${param.q[0]}" th:unless="${param.q == null}" class="alert alert-warning">
+            Your certificate has been revoked
+        </div>
+        <div th:if="${revokefailed}" class="alert alert-error">
+            Your certificate could not be revoked, because none exists.
+        </div>
         <h1>Manage account</h1>
         <div class="section-manage">
 
@@ -38,7 +44,16 @@
                 <p><button type="submit" value="Submit">Submit</button> <button type="reset">Reset</button></p>
             </form>
 
-            <a class="btn btn-primary" th:href="@{/certificate/issue}">Download PCKS#12 certificate!</a>
+            <form action="#" th:action="@{/certificate/issue}" method="post" class="form">
+
+                <div class="form-group">
+                    <label for="password">Encryption password</label>
+                    <input type="text" name="password" id="password" class="form-control" />
+                </div>
+
+                <button type="submit" class="btn btn-primary" th:href="@{/certificate/issue}">Download PCKS#12 certificate!</button>
+            </form>
+            <a class="btn btn-warning" th:href="@{/certificate/revoke}">Revoke certificate</a>
         </div>
     </div>
 

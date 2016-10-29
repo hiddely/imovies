@@ -27,6 +27,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public User findByUid(String uid) {
+        return userRepository.findByUid(uid);
+    }
+
+    @Override
     public User updateUser(UserForm userForm) {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User loggedIn = userDetails.getUser();
