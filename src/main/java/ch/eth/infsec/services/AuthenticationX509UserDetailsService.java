@@ -28,28 +28,41 @@ public class AuthenticationX509UserDetailsService implements AuthenticationUserD
         final String patternCN = "CN=(.*?),";
         final String patternOU = "OU=(.*?),";
 
-        String cn = extractFromDN(subjectDN, patternCN);
-        User user = userService.findByUid(cn);
-        if (user == null) {
-            throw new UsernameNotFoundException("User with UID " + cn + " was not found.");
-        }
-        ch.eth.infsec.model.UserDetails userDetails = new ch.eth.infsec.model.UserDetails(user);
+
 
         // check if user is admin
         String userType = extractFromDN(subjectDN, patternOU);
         if (userType.equals("Admin")) {
             System.out.println("User is admin!");
 
+            User adminUser = new User();
+            adminUser.setFirstname("iMovies");
+            adminUser.setLastname("Admin");
+            adminUser.setEmail("admin@imovies.com");
+
+            ch.eth.infsec.model.UserDetails userDetails = new ch.eth.infsec.model.UserDetails(adminUser);
+
             userDetails.setAuthorities(AuthorityUtils
                     .commaSeparatedStringToAuthorityList("ROLE_USER,ROLE_ADMIN"));
+
+            return userDetails;
         } else if (userType.equals("Personal")) {
+
+            String cn = extractFromDN(subjectDN, patternCN);
+            User user = userService.findByUid(cn);
+            if (user == null) {
+                throw new UsernameNotFoundException("User with UID " + cn + " was not found.");
+            }
+
+            ch.eth.infsec.model.UserDetails userDetails = new ch.eth.infsec.model.UserDetails(user);
+
             userDetails.setAuthorities(AuthorityUtils
                     .commaSeparatedStringToAuthorityList("ROLE_USER"));
+
+            return userDetails;
         } else {
             throw new InvalidCertificateException("User is of invalid type");
         }
-
-        return userDetails;
 
     }
 
