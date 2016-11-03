@@ -1,13 +1,7 @@
 package ch.eth.infsec.services.pki;
 
 import ch.eth.infsec.model.User;
-import org.bouncycastle.jcajce.provider.keystore.PKCS12;
 
-import java.io.IOException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 
@@ -17,9 +11,10 @@ public interface PKIService {
      * Issues a new certificate for the given user.
      * @param user User object.
      * @param password User-provided password to encrypt the identity with
+     * @param caIdentity Signing identity, leave null to use default
      * @return String path to p12 file
      */
-    String issueCertificate(User user, String password);
+    String issueCertificate(User user, String password, CAService.Identity caIdentity);
 
     /**
      * Revoke a certificate.
@@ -33,7 +28,7 @@ public interface PKIService {
      * @param certificate User certificate
      * @return true for valid, false invalid
      */
-    boolean isValid(Certificate certificate);
+    boolean isValid(X509Certificate certificate);
 
     /**
      * Get the number of issued certificates.

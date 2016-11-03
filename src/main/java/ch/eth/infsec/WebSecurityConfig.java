@@ -57,14 +57,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .inMemoryAuthentication()
                 .withUser("user").password("password").roles("USER");*/
 
-        auth.authenticationProvider(authenticationProvider())
+        auth
                 .userDetailsService(userDetailsService())
                 .passwordEncoder(passwordEncoder());
-    }
-
-    @Bean
-    public AuthenticationProvider authenticationProvider() {
-        return new X509AuthenticationProvider();
     }
 
     @Bean

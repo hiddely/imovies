@@ -30,7 +30,7 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 
 @Service
-public class CertificateService {
+public class CertificateStoreService {
 
     KeyStore trustStore;
     File trustStoreFile = new File(CAUtil.cryptoPath + "trust.jks");
@@ -39,7 +39,7 @@ public class CertificateService {
     X509CRLHolder crl;
     File crlFile = new File(CAUtil.cryptoPath + "revoked.crl");
 
-    public CertificateService() throws GeneralSecurityException, IOException {
+    public CertificateStoreService() throws GeneralSecurityException, IOException {
 
         trustStore = KeyStore.getInstance("JKS");
         trustStoreFile.createNewFile();

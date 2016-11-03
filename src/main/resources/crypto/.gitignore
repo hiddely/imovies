@@ -2,3 +2,4 @@ certificates/*
 config.properties
 revoked.crl
 trust.jks
+imoviesca.pfx

@@ -38,7 +38,7 @@ public class CertificateController {
         }
 
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String path = pkiService.issueCertificate(userDetails.getUser(), password);
+        String path = pkiService.issueCertificate(userDetails.getUser(), password, null);
         File file = new File(path);
 
         HttpHeaders respHeaders = new HttpHeaders();

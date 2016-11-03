@@ -36,18 +36,20 @@ public class PKIServiceImpl implements PKIService {
     CAService caService;
 
     @Autowired
-    CertificateService certificateService;
+    CertificateStoreService certificateStoreService;
 
     @Override
-    public String issueCertificate(User user, String password) {
-        CAService.Identity caIdentity = caService.getSigningIdentity();
+    public String issueCertificate(User user, String password, CAService.Identity caIdentity) {
+        if (caIdentity == null) {
+            caIdentity = caService.getSigningIdentity();
+        }
 
         KeyPair clientKeyPair = CAUtil.generateKeyPair();
         X509Certificate clientCertificate = generateCertificate(user, clientKeyPair.getPublic(), caIdentity);
 
         // store the certificate
         try {
-            certificateService.saveCertificate(clientCertificate);
+            certificateStoreService.saveCertificate(clientCertificate);
         } catch (IOException | GeneralSecurityException e) {
             throw new PKIServiceException("Could not save client certificate", e);
         }
@@ -59,13 +61,13 @@ public class PKIServiceImpl implements PKIService {
     @Override
     public boolean revokeCertificate(User user) {
         try {
-            X509Certificate certificate = certificateService.getCertificate(user.getUid());
-            if (certificate == null || certificateService.hasRevokedCertificate(certificate)) {
+            X509Certificate certificate = certificateStoreService.getCertificate(user.getUid());
+            if (certificate == null || certificateStoreService.hasRevokedCertificate(certificate)) {
                 return false;
             }
             CAService.Identity caIdentity = caService.getSigningIdentity();
 
-            certificateService.revokeCertificate(
+            certificateStoreService.revokeCertificate(
                     new JcaX509CertificateHolder(caIdentity.getCertificate()).getSubject(),
                     caIdentity,
                     certificate
@@ -80,14 +82,22 @@ public class PKIServiceImpl implements PKIService {
     }
 
     @Override
-    public boolean isValid(Certificate certificate) {
-        return false;
+    public boolean isValid(X509Certificate certificate) {
+
+        // our apache tomcat already checks with the truststore
+
+        try {
+            // we just check the revocation list
+            return !certificateStoreService.hasRevokedCertificate(certificate);
+        } catch (KeyStoreException e) {
+            throw new PKIServiceException("Could not check with revocation list", e);
+        }
     }
 
     @Override
     public int numberOfCertificates() {
         try {
-            return certificateService.countCertificates();
+            return certificateStoreService.countCertificates();
         } catch (KeyStoreException e) {
             throw new PKIServiceException("Could count certificates", e);
         }
@@ -95,18 +105,18 @@ public class PKIServiceImpl implements PKIService {
 
     @Override
     public int numberOfCRL() {
-        return certificateService.countCRL();
+        return certificateStoreService.countCRL();
     }
 
     @Override
     public int currentSerialNumber() {
-        return Integer.parseInt(certificateService.loadProperty("serialNumber", "1"));
+        return Integer.parseInt(certificateStoreService.loadProperty("serialNumber", "1"));
     }
 
     @Override
     public Collection<X509Certificate> getAllCertificates() {
         try {
-            return certificateService.getAllCertificates();
+            return certificateStoreService.getAllCertificates();
         } catch (KeyStoreException e) {
             throw new PKIServiceException("Could not load all certificates", e);
         }
@@ -152,8 +162,8 @@ public class PKIServiceImpl implements PKIService {
 
             X509CertificateHolder certificateHolder = builder.build(CAUtil.contentSigner(caIdentity.getKeyPair()));
 
-            certificateService.getProperties().setProperty("serialNumber", (currentSerialNumber() + 1) + "");
-            certificateService.saveProperties();
+            certificateStoreService.getProperties().setProperty("serialNumber", (currentSerialNumber() + 1) + "");
+            certificateStoreService.saveProperties();
 
             return new JcaX509CertificateConverter().getCertificate(certificateHolder);
         } catch (CertificateException | IOException | NoSuchAlgorithmException e) {
@@ -168,10 +178,15 @@ public class PKIServiceImpl implements PKIService {
      */
     private X500Name subject(User user) {
         X500NameBuilder nameBuilder = new X500NameBuilder(BCStyle.INSTANCE);
-        nameBuilder.addRDN(BCStyle.O, "iMovies");
-        nameBuilder.addRDN(BCStyle.OU, "Personal");
-        nameBuilder.addRDN(BCStyle.EmailAddress, user.getEmail());
-        nameBuilder.addRDN(BCStyle.CN, user.getUid());
+        if (user == null) {
+            nameBuilder.addRDN(BCStyle.O, "iMovies");
+            nameBuilder.addRDN(BCStyle.OU, "Admin");
+        } else {
+            nameBuilder.addRDN(BCStyle.O, "iMovies");
+            nameBuilder.addRDN(BCStyle.OU, "Personal");
+            nameBuilder.addRDN(BCStyle.EmailAddress, user.getEmail());
+            nameBuilder.addRDN(BCStyle.CN, user.getUid());
+        }
         return nameBuilder.build();
     }
 
@@ -206,7 +221,10 @@ public class PKIServiceImpl implements PKIService {
             store.setKeyEntry("Client key", keyPair.getPrivate(), password.toCharArray(), certificates);
 
             String path = CAUtil.cryptoPath + "certificates/";
-            String filename =  user.getUid() + "-" + System.currentTimeMillis() + ".p12";
+            String filename = "admin/admin-" + System.currentTimeMillis() + ".p12";
+            if (user != null) {
+                filename =  user.getUid() + "-" + System.currentTimeMillis() + ".p12";
+            }
             String fullFile = path + filename;
             File folder = new File(path);
             folder.mkdirs();

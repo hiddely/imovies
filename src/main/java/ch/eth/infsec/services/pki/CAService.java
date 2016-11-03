@@ -14,6 +14,7 @@ import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
@@ -33,16 +34,33 @@ public class CAService {
     private final String caKeyStoreIntermediateKeyPassword = "imovies";
     private final String caKeyStoreIntermediateAlias = "imovieskeystoreintermediate";
 
+    @Autowired
+    PKIService pkiService;
+
     public Identity getSigningIdentity() {
 
         KeyStore caKeyStore = loadKeystore();
 
-        if (caKeyStore == null) {
-            // generate new
-            caKeyStore = generateCA();
-        }
-
         try {
+
+            if (caKeyStore == null) {
+                // generate new
+                caKeyStore = generateCA();
+
+                // generate 3 admin certs
+                Key privateKey = caKeyStore.getKey(caKeyStoreIntermediateAlias, caKeyStoreIntermediateKeyPassword.toCharArray());
+                X509Certificate certificate = (X509Certificate) caKeyStore.getCertificate(caKeyStoreIntermediateAlias);
+                KeyPair caKeyPair = new KeyPair(certificate.getPublicKey(), (PrivateKey)privateKey);
+
+                Identity identity = new Identity(caKeyPair, certificate);
+                for (int i = 0; i < 3; i++) {
+                    pkiService.issueCertificate(null, "password", identity);
+                }
+
+                return identity;
+
+            }
+
             Key privateKey = caKeyStore.getKey(caKeyStoreIntermediateAlias, caKeyStoreIntermediateKeyPassword.toCharArray());
             X509Certificate certificate = (X509Certificate) caKeyStore.getCertificate(caKeyStoreIntermediateAlias);
             KeyPair caKeyPair = new KeyPair(certificate.getPublicKey(), (PrivateKey)privateKey);
@@ -159,6 +177,13 @@ public class CAService {
         nameBuilder.addRDN(BCStyle.EmailAddress, "admin@imovies.com");
         nameBuilder.addRDN(BCStyle.O, "iMovies");
         nameBuilder.addRDN(BCStyle.OU, "Intermediate");
+        return nameBuilder.build();
+    }
+
+    private X500Name adminName() {
+        X500NameBuilder nameBuilder = new X500NameBuilder(BCStyle.INSTANCE);
+        nameBuilder.addRDN(BCStyle.O, "iMovies");
+        nameBuilder.addRDN(BCStyle.OU, "Admin");
         return nameBuilder.build();
     }
 

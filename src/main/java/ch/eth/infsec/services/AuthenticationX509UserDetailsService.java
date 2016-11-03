@@ -1,6 +1,7 @@
 package ch.eth.infsec.services;
 
 import ch.eth.infsec.model.User;
+import ch.eth.infsec.services.pki.PKIService;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.AuthorityUtils;
@@ -18,9 +19,16 @@ public class AuthenticationX509UserDetailsService implements AuthenticationUserD
     @Autowired
     UserService userService;
 
+    @Autowired
+    PKIService pkiService;
+
     @Override
     public UserDetails loadUserDetails(PreAuthenticatedAuthenticationToken token) throws UsernameNotFoundException {
         X509Certificate certificate = (X509Certificate)token.getCredentials();
+
+        if (!pkiService.isValid(certificate)) {
+            throw new InvalidCertificateException("Certificate is invalid.");
+        }
 
         System.out.println("Certificate: " + certificate.getSerialNumber().toString());
 
