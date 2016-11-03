@@ -181,6 +181,7 @@ public class PKIServiceImpl implements PKIService {
         if (user == null) {
             nameBuilder.addRDN(BCStyle.O, "iMovies");
             nameBuilder.addRDN(BCStyle.OU, "Admin");
+            nameBuilder.addRDN(BCStyle.CN, "admin-" + System.currentTimeMillis());
         } else {
             nameBuilder.addRDN(BCStyle.O, "iMovies");
             nameBuilder.addRDN(BCStyle.OU, "Personal");
@@ -221,7 +222,7 @@ public class PKIServiceImpl implements PKIService {
             store.setKeyEntry("Client key", keyPair.getPrivate(), password.toCharArray(), certificates);
 
             String path = CAUtil.cryptoPath + "certificates/";
-            String filename = "admin/admin-" + System.currentTimeMillis() + ".p12";
+            String filename = "admin-" + System.currentTimeMillis() + ".p12";
             if (user != null) {
                 filename =  user.getUid() + "-" + System.currentTimeMillis() + ".p12";
             }

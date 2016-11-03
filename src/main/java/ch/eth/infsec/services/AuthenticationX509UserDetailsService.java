@@ -27,7 +27,8 @@ public class AuthenticationX509UserDetailsService implements AuthenticationUserD
         X509Certificate certificate = (X509Certificate)token.getCredentials();
 
         if (!pkiService.isValid(certificate)) {
-            throw new InvalidCertificateException("Certificate is invalid.");
+            //throw new InvalidCertificateException("Certificate is invalid.");
+            throw new UsernameNotFoundException("Certificate is invalid.");
         }
 
         System.out.println("Certificate: " + certificate.getSerialNumber().toString());
