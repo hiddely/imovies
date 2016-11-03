@@ -37,7 +37,7 @@ public class PKIServiceTest {
 
     @Test
     public void testIssueCertificate() {
-        String result = pkiService.issueCertificate(user, "password");
+        String result = pkiService.issueCertificate(user, "password", null);
 
         assertNotNull(result);
     }
