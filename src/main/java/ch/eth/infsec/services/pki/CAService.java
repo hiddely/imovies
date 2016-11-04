@@ -27,15 +27,17 @@ import java.util.Date;
 @Service
 public class CAService {
 
-    private final String caKeyStoreFile = "imoviesca.pfx";
-    private final String caKeyStorePassword = "imovies";
+    private final static String caKeyStoreFile = "imoviesca.pfx";
+    private final static String caKeyStorePassword = "imovies";
     private final String caKeyStoreRootKeyPassword = "imovies";
-    private final String caKeyStoreRootAlias = "imovieskeystoreroot";
+    public static final String caKeyStoreRootAlias = "imovieskeystoreroot";
     private final String caKeyStoreIntermediateKeyPassword = "imovies";
-    private final String caKeyStoreIntermediateAlias = "imovieskeystoreintermediate";
+    public static final String caKeyStoreIntermediateAlias = "imovieskeystoreintermediate";
 
     @Autowired
     PKIService pkiService;
+
+    public static Identity[] caIdentityChain;
 
     public Identity getSigningIdentity() {
 
@@ -47,12 +49,7 @@ public class CAService {
                 // generate new
                 caKeyStore = generateCA();
 
-                // generate 3 admin certs
-                Key privateKey = caKeyStore.getKey(caKeyStoreIntermediateAlias, caKeyStoreIntermediateKeyPassword.toCharArray());
-                X509Certificate certificate = (X509Certificate) caKeyStore.getCertificate(caKeyStoreIntermediateAlias);
-                KeyPair caKeyPair = new KeyPair(certificate.getPublicKey(), (PrivateKey)privateKey);
-
-                Identity identity = new Identity(caKeyPair, certificate);
+                Identity identity = buildCAChain(caKeyStore);
                 for (int i = 0; i < 3; i++) {
                     pkiService.issueCertificate(null, "password", identity);
                 }
@@ -61,21 +58,43 @@ public class CAService {
 
             }
 
-            Key privateKey = caKeyStore.getKey(caKeyStoreIntermediateAlias, caKeyStoreIntermediateKeyPassword.toCharArray());
-            X509Certificate certificate = (X509Certificate) caKeyStore.getCertificate(caKeyStoreIntermediateAlias);
-            KeyPair caKeyPair = new KeyPair(certificate.getPublicKey(), (PrivateKey)privateKey);
-
-            return new Identity(caKeyPair, certificate);
+            return buildCAChain(caKeyStore);
         } catch (KeyStoreException | NoSuchAlgorithmException | UnrecoverableKeyException e) {
             throw new PKIServiceException("Could extract intermediate from keystore", e);
         }
     }
 
     /**
+     * Builds the CA chain, stores in static var. Returns intermediate identity.
+     * @param caKeyStore
+     * @return
+     * @throws UnrecoverableKeyException
+     * @throws NoSuchAlgorithmException
+     * @throws KeyStoreException
+     */
+    private Identity buildCAChain(KeyStore caKeyStore) throws UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException {
+        Key iPrivateKey = caKeyStore.getKey(caKeyStoreIntermediateAlias, caKeyStoreIntermediateKeyPassword.toCharArray());
+        X509Certificate iCertificate = (X509Certificate) caKeyStore.getCertificate(caKeyStoreIntermediateAlias);
+        KeyPair iCaKeyPair = new KeyPair(iCertificate.getPublicKey(), (PrivateKey)iPrivateKey);
+        Identity iIdentity = new Identity(iCaKeyPair, iCertificate);
+
+        Key rPrivateKey = caKeyStore.getKey(caKeyStoreRootAlias, caKeyStoreRootKeyPassword.toCharArray());
+        X509Certificate rCertificate = (X509Certificate) caKeyStore.getCertificate(caKeyStoreRootAlias);
+        KeyPair rCaKeyPair = new KeyPair(rCertificate.getPublicKey(), (PrivateKey)rPrivateKey);
+        Identity rIdentity = new Identity(rCaKeyPair, rCertificate);
+
+        CAService.caIdentityChain = new Identity[] {
+            rIdentity, iIdentity
+        };
+
+        return iIdentity;
+    }
+
+    /**
      * Get the CA identity from file
      * @return CA identity in keystore format.
      */
-    private KeyStore loadKeystore() {
+    public static KeyStore loadKeystore() {
         try {
             File file = new File(CAUtil.cryptoPath + caKeyStoreFile);
             if (!file.exists()) {

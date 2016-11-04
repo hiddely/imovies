@@ -1,5 +1,6 @@
 package ch.eth.infsec;
 
+import ch.eth.infsec.services.X509TrustManagerImpl;
 import ch.eth.infsec.services.pki.CAService;
 import org.apache.catalina.connector.Connector;
 import org.apache.coyote.ProtocolHandler;
@@ -20,9 +21,12 @@ import org.springframework.context.annotation.ComponentScan;
 import javax.annotation.PostConstruct;
 import java.io.File;
 import java.security.Security;
+import java.security.cert.X509Certificate;
 
 @SpringBootApplication
 public class IMoviesApplication {
+
+	public static X509Certificate intermediateCertificate;
 
 	public static void main(String[] args) {
 		SpringApplication.run(IMoviesApplication.class, args);
@@ -35,6 +39,10 @@ public class IMoviesApplication {
 	public void addBCProvider() {
 		Security.addProvider(new BouncyCastleProvider());
 		Security.setProperty("ocsp.enable", "true");
+
+		// generate the CA
+		CAService.Identity caIdentity = caService.getSigningIdentity();
+		IMoviesApplication.intermediateCertificate = caIdentity.getCertificate();
 	}
 
 	@Bean
@@ -70,6 +78,8 @@ public class IMoviesApplication {
 
 							//connector.addSslHostConfig(config);
 							handler.setCrlFile(crlFile.getAbsolutePath());
+
+							handler.setTrustManagerClassName(X509TrustManagerImpl.class.getName());
 
 							//connector.
 							System.out.println("Hi");

@@ -32,11 +32,11 @@ import java.util.stream.Collectors;
 @Service
 public class CertificateStoreService {
 
-    KeyStore trustStore;
+    public static KeyStore trustStore;
     File trustStoreFile = new File(CAUtil.cryptoPath + "trust.jks");
     final String trustStorePassword = "imoviestruststore";
 
-    X509CRLHolder crl;
+    public static X509CRLHolder crl;
     File crlFile = new File(CAUtil.cryptoPath + "revoked.crl");
 
     public CertificateStoreService() throws GeneralSecurityException, IOException {
