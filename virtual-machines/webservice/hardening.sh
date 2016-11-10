@@ -34,6 +34,8 @@ iptables -A INPUT -s localhost -p tcp -m tcp --dport 3306 -m state --state NEW,E
 ## Allow connections from port (8080)
 iptables -A INPUT -p tcp -m tcp --dport 8080 -m state --state NEW,ESTABLISHED -j ACCEPT
 
+## Allow connections from port (8443)
+iptables -A INPUT -p tcp -m tcp --dport 8443 -m state --state NEW,ESTABLISHED -j ACCEPT
 
 ## Prevent HTTP DoS Attack
 #> -m limit: This uses the limit iptables extension
