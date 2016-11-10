@@ -41,6 +41,7 @@ iptables -A INPUT -p tcp -m tcp --dport 8443 -m state --state NEW,ESTABLISHED -j
 #> -m limit: This uses the limit iptables extension
 #> --limit 25/minute: This limits only maximum of 25 connection per minute. Change this value based on your specific requirement
 #> --limit-burst 100: This value indicates that the limit/minute will be enforced only after the total number of connection have reached the limit-burst level.
-#iptables -A INPUT -p tcp --dport 80 -m limit --limit 25/minute --limit-burst 100 -j ACCEPT
+iptables -A INPUT -p tcp --dport 8443 -m limit --limit 25/minute --limit-burst 100 -j ACCEPT
+
 
 exit
