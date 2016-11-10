@@ -9,6 +9,8 @@ echo -e "Host github.com\n\tStrictHostKeyChecking no\n" > /home/imovies-admin/.s
 chown imovies-admin:imovies-admin /home/imovies-admin/.ssh/id_rsa
 chown imovies-admin:imovies-admin /home/imovies-admin/.ssh/id_rsa.pub
 
+chmod 400 /home/imovies-admin/.ssh/id_rsa
+
 echo "##### DOWNLOAD FROM GITHUB #####"
 git init
 su imovies-admin << EOF
