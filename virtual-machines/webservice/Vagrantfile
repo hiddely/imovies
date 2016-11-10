@@ -80,8 +80,9 @@ Vagrant.configure("2") do |config|
     SHELL
 
   config.vm.provision "shell", path: "add_new_user.sh"
-  config.vm.provision "file", source: "./id_rsa", destination: "/home/imovies-admin/.ssh/id_rsa"
-  config.vm.provision "file", source: "./id_rsa.pub", destination: "/home/imovies-admin/.ssh/id_rsa.pub"
+  config.vm.provision "file", source: "./keys/id_rsa", destination: "/home/imovies-admin/.ssh/id_rsa"
+  config.vm.provision "file", source: "./keys/id_rsa.pub", destination: "/home/imovies-admin/.ssh/id_rsa.pub"
+  config.vm.provision "file", source: "./keys/bak_rsa.pub.pem", destination: "/home/vagrant/.ssh/bak_rsa.pub.pem"
   config.vm.provision "shell", path: "download_imovies.sh"
   config.vm.provision "shell", path: "hardening.sh"
   
