@@ -31,8 +31,8 @@ rm -f $BACKUP_DIR/key.pem
 echo "=== ENCRYPTED ===";
 echo "=== UPLOADING TO SERVER ===";
 
-scp -P 22222 $BACKUP_DIR/key.bin.enc vagrant@localhost:/backup
-scp -P 22222 $BACKUP_DIR/digest.zip.enc vagrant@localhost:/backup
+scp -P 22222 $BACKUP_DIR/key.bin.enc vagrant@localhost:/
+scp -P 22222 $BACKUP_DIR/digest.zip.enc vagrant@localhost:/
 
 echo "=== END UPLOAD ===";
 
