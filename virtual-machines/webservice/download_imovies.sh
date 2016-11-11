@@ -6,9 +6,11 @@ ssh-add /home/imovies-admin/.ssh/id_rsa
 
 echo -e "Host github.com\n\tStrictHostKeyChecking no\n" > /home/imovies-admin/.ssh/config
 
+chown imovies-admin:imovies-admin /home/imovies-admin/.ssh/
 chown imovies-admin:imovies-admin /home/imovies-admin/.ssh/id_rsa
 chown imovies-admin:imovies-admin /home/imovies-admin/.ssh/id_rsa.pub
 
+chmod 700 /home/imovies-admin/.ssh/
 chmod 400 /home/imovies-admin/.ssh/id_rsa
 
 echo "##### DOWNLOAD FROM GITHUB #####"
