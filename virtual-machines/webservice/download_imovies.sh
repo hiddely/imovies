@@ -26,7 +26,6 @@ chown imovies-admin:imovies-admin /home/imovies-admin/imovies/src/main/resources
 
 echo "##### CREATE DATABASE #####"
 echo 'create database imovies' | mysql -uroot -proot
-mysql -uroot -proot imovies < ./virtual-machines/imovies_users.dump
+mysql -uroot -proot imovies < imovies_users.dump
 
-rm -r virtual-machines
-
+rm /home/vagrant/imovies_users.dump
