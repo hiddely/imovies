@@ -1,6 +1,6 @@
-spring.datasource.url=jdbc:mysql://localhost/imovies
-spring.datasource.username=root
-spring.datasource.password=root
+spring.datasource.url=jdbc:mysql://192.168.1.5/imovies
+spring.datasource.username=webservice
+spring.datasource.password=webservice
 
 spring.datasource.driver-class-name=com.mysql.jdbc.Driver
 spring.jpa.database-platform=org.hibernate.dialect.MySQL5InnoDBDialect
