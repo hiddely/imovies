@@ -13,7 +13,7 @@ else
     echo "##### DEPLOY KEYS ON SERVER #####"
     for key in ssh_public_keys/*.pub; do
         cat $key | ssh -p "$port" "$user"@localhost "cat >> ~/.ssh/authorized_keys"
-        scp -P "$port" ./sshd_config "$user"@localhost:/etc/ssh/
+        scp -P "$port" ./sshd_config "$user"@localhost:/etc/ssh/sshd_config
     done
 fi
 
