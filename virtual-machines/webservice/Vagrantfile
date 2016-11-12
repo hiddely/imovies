@@ -87,6 +87,7 @@ Vagrant.configure("2") do |config|
   config.vm.provision "file", source: "./keys/id_rsa.pub", destination: "/home/imovies-admin/.ssh/id_rsa.pub"
   config.vm.provision "file", source: "./keys/bak_rsa.pub.pem", destination: "/home/vagrant/.ssh/bak_rsa.pub.pem"
   config.vm.provision "shell", path: "download_imovies.sh"
+  config.vm.provision "shell", path: "ssh -L 3306:127.0.0.1:3306 vagrant@192.168.1.5" # setup ssh tunnel to dbserver
   config.vm.provision "shell", path: "hardening.sh"
 
 end
