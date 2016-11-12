@@ -25,9 +25,3 @@ chmod 700 ./mvnw
 
 cp ./src/main/resources/application.properties.example ./src/main/resources/application.properties
 chown imovies-admin:imovies-admin /home/imovies-admin/imovies/src/main/resources/application.properties
-
-echo "##### CREATE DATABASE #####"
-echo 'create database imovies' | mysql -uroot -proot
-mysql -uroot -proot imovies < virtual-machines/webservice/imovies_users.dump
-
-rm -rf virtual-machines

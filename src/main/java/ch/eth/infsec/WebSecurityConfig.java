@@ -1,22 +1,22 @@
 package ch.eth.infsec;
 
-import ch.eth.infsec.services.*;
-import org.apache.tomcat.jdbc.pool.DataSource;
+import ch.eth.infsec.services.AuthenticationX509UserDetailsService;
+import ch.eth.infsec.services.Sha1PasswordEncoder;
+import ch.eth.infsec.services.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.AuthenticationUserDetailsService;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.thymeleaf.security.CsrfRepository;
 
 @Configuration
 @EnableWebSecurity
@@ -28,6 +28,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http.authorizeRequests().antMatchers("/css/**").permitAll().anyRequest().permitAll();
         http.authorizeRequests().antMatchers("/js/**").permitAll().anyRequest().permitAll();
         http
+                .csrf().csrfTokenRepository(new CsrfRepository())
+                .and()
                 .authorizeRequests()
                 .antMatchers("/", "/home", "/admin").permitAll()
                 .anyRequest().authenticated()

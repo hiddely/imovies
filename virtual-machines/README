@@ -1,0 +1,2 @@
+In order to deploy your public ssh key on the machines, put it in the 'ssh_public_keys' folder.
+Then it gets deployed automatically
