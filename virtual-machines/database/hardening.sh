@@ -22,8 +22,5 @@ iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
 ## Allow SSH
 iptables -A INPUT -p tcp -m tcp --dport 22 -m state --state NEW,ESTABLISHED -j ACCEPT
 
-## Allow MySQL (From LAN)
-iptables -A INPUT -s 192.168.1.4 -p tcp -m tcp --dport 3306 -m state --state NEW,ESTABLISHED -j ACCEPT
-
 
 exit
