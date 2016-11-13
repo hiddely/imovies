@@ -5,6 +5,9 @@ echo "=== BACKING UP LOGS ===";
 
 BACKUP_DIR=/tmp/backup
 
+BACKUP_PKEY=/home/vagrant/.ssh/bak_rsa.pub.pem
+#BACKUP_PKEY=/Users/hidde/IdeaProjects/iMovies/virtual-machines/webservice/keys/bak_rsa.pub.pem # local, to test
+
 rm -rf $BACKUP_DIR
 mkdir $BACKUP_DIR
 mkdir $BACKUP_DIR/original
@@ -14,7 +17,7 @@ cd $BACKUP_DIR/original
 cp /var/log/syslog $BACKUP_DIR/original
 #echo "HELLO BACKUP" > $BACKUP_DIR/original/log.txt # test log
 
-zip $BACKUP_DIR/original.zip $BACKUP_DIR/original
+zip -r $BACKUP_DIR/original.zip $BACKUP_DIR/original
 
 echo "=== ENCRYPTING ===";
 
@@ -24,15 +27,18 @@ openssl aes-256-cbc -a -salt -k $KEY -in $BACKUP_DIR/original.zip -out $BACKUP_D
 
 # encrypt our encryption key with our public key and store
 echo $KEY > $BACKUP_DIR/key.pem
-openssl rsautl -encrypt -inkey /home/vagrant/.ssh/bak_rsa.pub.pem -pubin -in $BACKUP_DIR/key.pem -out $BACKUP_DIR/key.bin.enc
-#openssl rsautl -encrypt -inkey /Users/hidde/IdeaProjects/iMovies/virtual-machines/webservice/keys/bak_rsa.pub.pem -pubin -in $BACKUP_DIR/key.pem -out $BACKUP_DIR/key.bin.enc
+openssl rsautl -encrypt -inkey $BACKUP_PKEY -pubin -in $BACKUP_DIR/key.pem -out $BACKUP_DIR/key.bin.enc
 rm -f $BACKUP_DIR/key.pem
 
 echo "=== ENCRYPTED ===";
 echo "=== UPLOADING TO SERVER ===";
 
-scp -P 22222 $BACKUP_DIR/key.bin.enc vagrant@localhost:/
-scp -P 22222 $BACKUP_DIR/digest.zip.enc vagrant@localhost:/
+#scp -P 22222 $BACKUP_DIR/key.bin.enc vagrant@localhost:/
+#scp -P 22222 $BACKUP_DIR/digest.zip.enc vagrant@localhost:/
+
+# Local, to test
+#cp $BACKUP_DIR/key.bin.enc ~/Desktop/key.bin.enc
+#cp $BACKUP_DIR/digest.zip.enc ~/Desktop/digest.zip.enc
 
 echo "=== END UPLOAD ===";
 
