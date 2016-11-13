@@ -31,8 +31,6 @@ public class AuthenticationX509UserDetailsService implements AuthenticationUserD
             throw new UsernameNotFoundException("Certificate is invalid.");
         }
 
-        System.out.println("Certificate: " + certificate.getSerialNumber().toString());
-
         String subjectDN = certificate.getSubjectDN().toString();
         final String patternCN = "CN=(.*?),";
         final String patternOU = "OU=(.*?),";
