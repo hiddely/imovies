@@ -2,6 +2,8 @@ package ch.eth.infsec.controllers;
 
 import ch.eth.infsec.model.UserDetails;
 import ch.eth.infsec.services.pki.PKIService;
+import org.bouncycastle.cert.ocsp.BasicOCSPRespBuilder;
+import org.bouncycastle.cert.ocsp.OCSPRespBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
@@ -57,9 +59,12 @@ public class CertificateController {
             return "redirect:/account?q=Your certificate has been revoked";
         }
         return "redirect:/account?q=Your certificate was not revoked, because you don't have any";
-
-
     }
+
+    /*public String ocsp() {
+        BasicOCSPRespBuilder basicOCSPRespBuilder = new BasicOCSPRespBuilder();
+
+    }*/
 
 
 }
