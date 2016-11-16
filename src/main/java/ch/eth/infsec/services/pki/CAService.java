@@ -183,7 +183,7 @@ public class CAService {
 
     private X500Name rootName() {
         X500NameBuilder nameBuilder = new X500NameBuilder(BCStyle.INSTANCE);
-        nameBuilder.addRDN(BCStyle.CN, "root.imovies.com");
+        nameBuilder.addRDN(BCStyle.CN, "127.0.0.1");
         nameBuilder.addRDN(BCStyle.EmailAddress, "admin@imovies.com");
         nameBuilder.addRDN(BCStyle.O, "iMovies");
         nameBuilder.addRDN(BCStyle.OU, "Root");
@@ -192,7 +192,7 @@ public class CAService {
 
     private X500Name intermediateName() {
         X500NameBuilder nameBuilder = new X500NameBuilder(BCStyle.INSTANCE);
-        nameBuilder.addRDN(BCStyle.CN, "intermediate.imovies.com");
+        nameBuilder.addRDN(BCStyle.CN, "127.0.0.1");
         nameBuilder.addRDN(BCStyle.EmailAddress, "admin@imovies.com");
         nameBuilder.addRDN(BCStyle.O, "iMovies");
         nameBuilder.addRDN(BCStyle.OU, "Intermediate");
