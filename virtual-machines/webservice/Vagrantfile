@@ -75,9 +75,6 @@ Vagrant.configure("2") do |config|
     apt-get install -y maven
     apt-get install -y iptables
     apt-get install -y vim
-    debconf-set-selections <<< 'mysql-server mysql-server/root_password password root'
-    debconf-set-selections <<< 'mysql-server mysql-server/root_password_again password root'
-    apt-get install -y mysql-server
     apt-get install -y openjdk-8-jdk
     apt-get -y remove apache2
     SHELL
@@ -89,11 +86,14 @@ Vagrant.configure("2") do |config|
   config.vm.provision "file", source: "./for_db", destination: "/home/imovies-admin/.ssh/for_db"
   config.vm.provision "file", source: "./for_db.pub", destination: "/home/imovies-admin/.ssh/for_db.pub"
   config.vm.provision "shell", inline: <<-SHELL
+    chmod 600 /home/imovies-admin/.ssh/for*
     eval "$(ssh-agent -s)"
     ssh-add /home/imovies-admin/.ssh/for_db
+    echo -e "Host 192.168.1.5\n\tStrictHostKeyChecking no\n" >> /home/vagrant/.ssh/config
     echo -e "Host 192.168.1.5\n\tStrictHostKeyChecking no\n" >> /home/imovies-admin/.ssh/config
-    ssh -i /home/imovies-admin/.ssh/for_db.pub -f -N -L 3306:127.0.0.1:3306 vagrant@192.168.1.5 # setup ssh tunnel to dbserver
+    chown imovies-admin:imovies-admin /home/imovies-admin/.ssh/for*
   SHELL
+  config.vm.provision "shell", path: "build_tunnel.sh"
   config.vm.provision "shell", path: "download_imovies.sh"
   config.vm.provision "shell", path: "hardening.sh"
 
@@ -101,6 +101,7 @@ Vagrant.configure("2") do |config|
   for key in @keys
     next if key == '.' or key == '..'
     content = File.open("../ssh_public_keys/#{key}", 'r').read
+    config.vm.provision :shell, :inline => "echo '#{content}' >> /home/vagrant/.ssh/authorized_keys"
     config.vm.provision :shell, :inline => "echo '#{content}' >> /home/imovies-admin/.ssh/authorized_keys"
   end
 

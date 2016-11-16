@@ -11,7 +11,7 @@ chown imovies-admin:imovies-admin /home/imovies-admin/.ssh/id_rsa
 chown imovies-admin:imovies-admin /home/imovies-admin/.ssh/id_rsa.pub
 
 chmod 700 /home/imovies-admin/.ssh/
-chmod 400 /home/imovies-admin/.ssh/id_rsa
+chmod 600 /home/imovies-admin/.ssh/id_rsa
 
 echo "##### DOWNLOAD FROM GITHUB #####"
 git init
