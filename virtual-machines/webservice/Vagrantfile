@@ -97,7 +97,6 @@ Vagrant.configure("2") do |config|
     echo -e "Host 192.168.1.5\n\tStrictHostKeyChecking no\n" >> /home/imovies-admin/.ssh/config
     echo -e "Host 192.168.1.6\n\tStrictHostKeyChecking no\n" >> /home/imovies-backup/.ssh/config
     chown imovies-admin:imovies-admin /home/imovies-admin/.ssh/for*
-    chown imovies-admin:imovies-admin /home/imovies-admin/run_imovies.sh
     chown imovies-backup:imovies-backup /home/imovies-backup/.ssh/*
     chown imovies-backup:imovies-backup /home/imovies-backup/scripts
     chown imovies-backup:imovies-backup /home/imovies-backup/scripts/backup.sh
