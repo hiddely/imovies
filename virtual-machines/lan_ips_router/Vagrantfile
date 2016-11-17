@@ -77,15 +77,17 @@ Vagrant.configure("2") do |config|
     apt-get install -y vim
     SHELL
 
-  config.vm.provision "file", source: "./interfaces", destination: "/etc/network/interfaces"
-  config.vm.provision "file", source: "./sysctl.conf", destination: "/etc/sysctl.conf"
-  config.vm.provision "file", source: "./pre_up_iptables", destination: "/etc/network/if-pre-up.d/iptables"
-  config.vm.provision "file", source: "./iptables", destination: "/etc/network/iptables"
+  config.vm.provision "file", source: "./interfaces", destination: "~/interfaces"
+  config.vm.provision "file", source: "./sysctl.conf", destination: "~/sysctl.conf"
+  config.vm.provision "file", source: "./pre_up_iptables", destination: "~/pre_up_iptables"
+  config.vm.provision "file", source: "./iptables", destination: "~/iptables"
+
+  config.vm.provision "shell", path: "move_config.sh"
 
   config.vm.provision "shell", inline: <<-SHELL
       # sudo chown root /etc/network/if-pre-up.d/iptables # already owned by root
       chmod 755 /etc/network/if-pre-up.d/iptables
-      bash /etc/network/if-pre-up.d/iptables
+      bash "/etc/network/if-pre-up.d/iptables"
     SHELL
 
 end

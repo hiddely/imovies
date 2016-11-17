@@ -7,7 +7,7 @@ source /etc/network/interfaces.d/*
 auto lo
 iface lo inet loopback
 
-# The primary network interface
+# The primary network interface, used for the administrative vagrant overlay access
 auto eth0
 iface eth0 inet dhcp
 
