@@ -5,7 +5,7 @@ echo "=== BACKING UP LOGS ===";
 
 BACKUP_DIR=/tmp/backup
 
-BACKUP_PKEY=/home/vagrant/.ssh/bak_rsa.pub.pem
+BACKUP_PKEY=/home/imovies-backup/.ssh/bak_rsa.pub.pem
 #BACKUP_PKEY=/Users/hidde/IdeaProjects/iMovies/virtual-machines/webservice/keys/bak_rsa.pub.pem # local, to test
 
 rm -rf $BACKUP_DIR
@@ -14,8 +14,8 @@ mkdir $BACKUP_DIR/original
 cd $BACKUP_DIR/original
 
 # all files to be backed up
-cp /var/log/syslog $BACKUP_DIR/original
-#echo "HELLO BACKUP" > $BACKUP_DIR/original/log.txt # test log
+#cp /var/log/syslog $BACKUP_DIR/original
+echo "HELLO BACKUP" > $BACKUP_DIR/original/log.txt # test log
 
 zip -r $BACKUP_DIR/original.zip $BACKUP_DIR/original
 
@@ -33,8 +33,8 @@ rm -f $BACKUP_DIR/key.pem
 echo "=== ENCRYPTED ===";
 echo "=== UPLOADING TO SERVER ===";
 
-#scp -P 22222 $BACKUP_DIR/key.bin.enc vagrant@localhost:/
-#scp -P 22222 $BACKUP_DIR/digest.zip.enc vagrant@localhost:/
+scp -P 22 $BACKUP_DIR/key.bin.enc vagrant@192.168.1.6:~/
+scp -P 22 $BACKUP_DIR/digest.zip.enc vagrant@192.168.1.6:~/
 
 # Local, to test
 #cp $BACKUP_DIR/key.bin.enc ~/Desktop/key.bin.enc

@@ -25,3 +25,7 @@ chmod 700 ./mvnw
 
 cp ./src/main/resources/application.properties.example ./src/main/resources/application.properties
 chown imovies-admin:imovies-admin /home/imovies-admin/imovies/src/main/resources/application.properties
+
+# run imovies in daemon
+#daemon --name="imovies-webservice" --output=webservice.txt sh /home/imovies-admin/imovies/run_imovies.sh
+(cd /home/imovies-admin/imovies && (./run_imovies.sh & ))
