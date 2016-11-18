@@ -45,51 +45,6 @@ public class IMoviesApplication {
 		IMoviesApplication.intermediateCertificate = caIdentity.getCertificate();
 	}
 
-	@Bean
-	public EmbeddedServletContainerCustomizer customizer() {
-		return new EmbeddedServletContainerCustomizer() {
-
-			@Override
-			public void customize(ConfigurableEmbeddedServletContainer configurableEmbeddedServletContainer) {
-				TomcatEmbeddedServletContainerFactory tomcat = (TomcatEmbeddedServletContainerFactory) configurableEmbeddedServletContainer;
-				//this will only handle the case where SSL is enabled on the main tomcat connector
-				tomcat.addConnectorCustomizers(new TomcatConnectorCustomizer() {
-					@Override
-					public void customize(Connector connector) {
-						Http11NioProtocol handler = (Http11NioProtocol) connector.getProtocolHandler();
-						File crlFile = new File("src/main/resources/crypto/revoked.crl");
-						File caFile = new File("src/main/resources/crypto/imoviesca.pfx");
-						File trustFile = new File("src/main/resources/crypto/trust.jks");
-						if (crlFile.exists()) {
-							/*SSLHostConfig config = new SSLHostConfig();
-							config.setCertificateKeystoreFile("serverIdentity.p12");
-							config.setCertificateKeystorePassword("imovies");
-							config.setCertificateKeystoreType("PKCS12");
-							config.setCertificateKeyAlias("imovies.com");
-							config.*/
-
-							//SSLHostConfig config = connector.findSslHostConfigs()[0];
-
-							//config.setCertificateRevocationListFile(crlFile.getAbsolutePath());
-							//config.setTruststoreFile(trustFile.getAbsolutePath());
-							//config.setTruststorePassword("imoviestruststore");
-							//config.setTruststoreProvider("JKS");
-							//config.setHostName("imovies.com");
-
-							//connector.addSslHostConfig(config);
-							handler.setCrlFile(crlFile.getAbsolutePath());
-
-							handler.setTrustManagerClassName(X509TrustManagerImpl.class.getName());
-
-							//connector.
-							System.out.println("Hi");
-						}
-					}
-				});
-			}
-		};
-	}
-
 	//@PostConstruct
 	public void generateCA() {
 

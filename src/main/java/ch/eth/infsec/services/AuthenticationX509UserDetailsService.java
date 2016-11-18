@@ -45,7 +45,7 @@ public class AuthenticationX509UserDetailsService implements AuthenticationUserD
             User adminUser = new User();
             adminUser.setFirstname("iMovies");
             adminUser.setLastname("Admin");
-            adminUser.setEmail("admin@imovies.com");
+            adminUser.setEmail("admin@imovies.ch");
 
             ch.eth.infsec.model.UserDetails userDetails = new ch.eth.infsec.model.UserDetails(adminUser);
 
