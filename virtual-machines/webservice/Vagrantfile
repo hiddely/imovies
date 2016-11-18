@@ -94,6 +94,7 @@ Vagrant.configure("2") do |config|
     chmod 600 /home/imovies-admin/.ssh/for*
     eval "$(ssh-agent -s)"
     ssh-add /home/imovies-admin/.ssh/for_db
+    ssh-add /home/imovies-backup/.ssh/id_rsa
     echo -e "Host 192.168.1.5\n\tStrictHostKeyChecking no\n" >> /home/vagrant/.ssh/config
     echo -e "Host 192.168.1.5\n\tStrictHostKeyChecking no\n" >> /home/imovies-admin/.ssh/config
     echo -e "Host 192.168.1.6\n\tStrictHostKeyChecking no\n" >> /home/imovies-backup/.ssh/config

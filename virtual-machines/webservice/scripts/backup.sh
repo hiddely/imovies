@@ -4,6 +4,7 @@
 echo "=== BACKING UP ===";
 
 BACKUP_DIR=/tmp/backup
+DATESTRING=$(date +'%Y.%m.%d')
 
 BACKUP_PKEY=/home/imovies-backup/.ssh/bak_rsa.pub.pem
 #BACKUP_PKEY=/Users/hidde/IdeaProjects/iMovies/virtual-machines/webservice/keys/bak_rsa.pub.pem # local, to test
@@ -31,18 +32,18 @@ echo "=== ENCRYPTING ===";
 
 KEY="$(openssl rand -base64 32)";
 
-openssl aes-256-cbc -a -salt -k $KEY -in $BACKUP_DIR/original.zip -out $BACKUP_DIR/digest.zip.enc
+openssl aes-256-cbc -a -salt -k $KEY -in $BACKUP_DIR/original.zip -out $BACKUP_DIR/digest.$DATESTRING.zip.enc
 
 # encrypt our encryption key with our public key and store
 echo $KEY > $BACKUP_DIR/key.pem
-openssl rsautl -encrypt -inkey $BACKUP_PKEY -pubin -in $BACKUP_DIR/key.pem -out $BACKUP_DIR/key.bin.enc
+openssl rsautl -encrypt -inkey $BACKUP_PKEY -pubin -in $BACKUP_DIR/key.pem -out $BACKUP_DIR/key.$DATESTRING.bin.enc
 rm -f $BACKUP_DIR/key.pem
 
 echo "=== ENCRYPTED ===";
 echo "=== UPLOADING TO SERVER ===";
 
-scp -P 22 $BACKUP_DIR/key.bin.enc vagrant@192.168.1.6:~/
-scp -P 22 $BACKUP_DIR/digest.zip.enc vagrant@192.168.1.6:~/
+scp -P 22 $BACKUP_DIR/key.$DATESTRING.bin.enc vagrant@192.168.1.6:~/backups/
+scp -P 22 $BACKUP_DIR/digest.$DATESTRING.zip.enc vagrant@192.168.1.6:~/backups/
 
 # Local, to test
 #cp $BACKUP_DIR/key.bin.enc ~/Desktop/key.bin.enc

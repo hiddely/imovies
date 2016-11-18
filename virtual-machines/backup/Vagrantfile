@@ -74,12 +74,15 @@ Vagrant.configure("2") do |config|
   SHELL
 
   config.vm.provision "shell", path: "hardening.sh"
+  config.vm.provision "shell", path: "add_new_user.sh"
   config.vm.provision "file", source: "decrypt.sh", destination: "/home/vagrant/decrypt.sh"
+  config.vm.provision "file", source: "manage_backup.sh", destination: "/home/vagrant/manage_backup.sh"
+  config.vm.provision "shell", path: "cron.sh", privileged: false
 
   id_rsa_key_pub = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCyVTafuR1rnt4wmqVdjzc7x3LYhubxpW9Ew0YXAvde5FpplDnoMXhWY/9q8CRLeGgOEo1HY0ceWBL9IS5OKpfqnPYAtjAE5xMmTd0TfMVrtD0xplLOpXjpaiCwyMGoucWY58V3JNucAfixe9sU6SGl+xGy1La6syN/HIL18yrXKuLIgQ/RuCgw6TXxiNEa8/xXa1o3+Q9/hxDb9ONky5G00kxPUcxJPOgMGdBz2ev/d0IrkeQvs0wXEjQOmiotPJzimpjMkAm6/WL2SmyAmG3HxXc9NqNUBD0ft5pMFz2bH2ivE/Ga20nAksjRSpd7Ife4PBtp5PycuInCqFZGfve8oDE16g6a6nHU1mkkrfDlBh8OuqnuC1gYvcwtEnYbkdNAFjQx2GCfMA7E7SqT5fIG3ZSk5D6Ua50owMq7gIo1RNUto3ldYwczotYIynRZ5t6Il5bnIDc3V9Mxo9fVx/njsXRjdaSKZLz/BARyngSKo/6Yq0ixUnYvQtjsFRwm1DsIz0BJTOfGjc6GcBoMwT7fPXDiqu0W8RslsSNFePqJ+8z0ziMDXxvQVflHRFIOVMRd9F9s+S00htgYYzOUIqOlamlXLxTCKgfGuzzdFWl8ydytIYU3tooRlp5WW7Ln3g7Xd9UU9EWfFdq1ZHUCA5uGOcVQUCCy8J/PifPUuC5UOQ== backup@imovies.com"
 
   config.vm.provision :shell,
-          :inline => "echo 'appending SSH Pub Key to ~vagrant/.ssh/authorized_keys' && echo '#{id_rsa_key_pub }' >> /home/vagrant/.ssh/authorized_keys && chmod 600 /home/vagrant/.ssh/authorized_keys"
+          :inline => "echo 'appending SSH Pub Key to ~/imovies-backup/.ssh/authorized_keys' && echo '#{id_rsa_key_pub }' >> /home/imovies-backup/.ssh/authorized_keys && chmod 600 /home/imovies-backup/.ssh/authorized_keys && chown imovies-backup:imovies-backup /home/imovies-backup/.ssh/authorized_keys"
 
   @keys = Dir.entries('../ssh_public_keys/')
   for key in @keys
@@ -91,6 +94,7 @@ Vagrant.configure("2") do |config|
   config.vm.provision "shell", inline: <<-SHELL
     chmod 600 /home/vagrant/.ssh/authorized_keys
   SHELL
+
 
   config.vm.provision "file", source: "../sshd_config", destination: "/home/vagrant/sshd_config"
   config.vm.provision "shell", inline: <<-SHELL
