@@ -18,6 +18,9 @@ password
 password
 !
 
+# Give user access to adm group to view log files
+sudo usermod -a -G adm imovies-backup
+
 sudo rm -rf /home/imovies-backup/.ssh
 sudo mkdir /home/imovies-backup/.ssh
 

@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-echo "=== BACKING UP LOGS ===";
+echo "=== BACKING UP ===";
 
 BACKUP_DIR=/tmp/backup
 
@@ -14,8 +14,16 @@ mkdir $BACKUP_DIR/original
 cd $BACKUP_DIR/original
 
 # all files to be backed up
-#cp /var/log/syslog $BACKUP_DIR/original
-echo "HELLO BACKUP" > $BACKUP_DIR/original/log.txt # test log
+cp /var/log/syslog $BACKUP_DIR/original
+cp /var/log/auth.log $BACKUP_DIR/original
+cp /var/log/kern.log $BACKUP_DIR/original
+cp /var/log/faillog $BACKUP_DIR/original
+cp /var/log/lastlog $BACKUP_DIR/original
+echo "=== DUMPING DATABASE ===";
+mysqldump -P 3306 -h 127.0.0.1 -u webservice -pwebservice imovies > $BACKUP_DIR/original/database.sql
+echo "=== END DATABASE DUMP ===";
+
+#echo "HELLO BACKUP" > $BACKUP_DIR/original/log.txt # test log
 
 zip -r $BACKUP_DIR/original.zip $BACKUP_DIR/original
 
@@ -42,4 +50,4 @@ scp -P 22 $BACKUP_DIR/digest.zip.enc vagrant@192.168.1.6:~/
 
 echo "=== END UPLOAD ===";
 
-echo "=== END BACKUP ===";
+echo "=== Finished BACKUP ===";
