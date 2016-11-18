@@ -23,13 +23,13 @@ iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
 iptables -A INPUT -p tcp -m tcp --dport 22 -m state --state NEW,ESTABLISHED -j ACCEPT
 
 ## Allow HTTP
-iptables -A INPUT -p tcp -m tcp --dport 80 -m state --state NEW,ESTABLISHED -j ACCEPT
+#iptables -A INPUT -p tcp -m tcp --dport 80 -m state --state NEW,ESTABLISHED -j ACCEPT
 
 ## Allow HTTPS
-iptables -A INPUT -p tcp -m tcp --dport 443 -m state --state NEW,ESTABLISHED -j ACCEPT
+#iptables -A INPUT -p tcp -m tcp --dport 443 -m state --state NEW,ESTABLISHED -j ACCEPT
 
 ## Allow MySQL (From LAN)
-iptables -A INPUT -s localhost -p tcp -m tcp --dport 3306 -m state --state NEW,ESTABLISHED -j ACCEPT
+#iptables -A INPUT -s localhost -p tcp -m tcp --dport 3306 -m state --state NEW,ESTABLISHED -j ACCEPT
 
 ## Allow connections from port (8080)
 iptables -A INPUT -p tcp -m tcp --dport 8080 -m state --state NEW,ESTABLISHED -j ACCEPT
