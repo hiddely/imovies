@@ -14,6 +14,8 @@ import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,11 +25,16 @@ import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Date;
+import java.util.Random;
 
 @Service
 public class CAService {
 
-    private final static String caKeyStoreFile = "imoviesca.pfx";
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    private final static String CA_SIGNING_KEY_STORE_FILE = "imoviesca.pfx";
+    private final static String CA_ROOT_KEY_STORE_FILE = "imoviescaroot.pfx";
+    private final static String CA_ROOT_KEY_STORE_PSW_FILE = "rootpsw.txt";
     private final static String caKeyStorePassword = "imovies";
     private final String caKeyStoreRootKeyPassword = "imovies";
     public static final String caKeyStoreRootAlias = "imovieskeystoreroot";
@@ -40,6 +47,16 @@ public class CAService {
     public static Identity[] caIdentityChain;
 
     public Identity getSigningIdentity() {
+
+        File rootCA = new File(CAUtil.CRYPTO_PATH + CA_ROOT_KEY_STORE_FILE); // extra security check
+        if (rootCA.exists()) {
+            throw new PKIServiceException("Root CA file found! Remove immediately. (Path: " + rootCA.getAbsolutePath() + ")");
+        }
+
+        File passwordFile = new File(CAUtil.CRYPTO_PATH + CA_ROOT_KEY_STORE_PSW_FILE);
+        if (passwordFile.exists()) {
+            throw new PKIServiceException("Root CA password file found! Remove immediately. (Path: " + rootCA.getAbsolutePath() + ")");
+        }
 
         KeyStore caKeyStore = loadKeystore();
 
@@ -78,10 +95,10 @@ public class CAService {
         KeyPair iCaKeyPair = new KeyPair(iCertificate.getPublicKey(), (PrivateKey)iPrivateKey);
         Identity iIdentity = new Identity(iCaKeyPair, iCertificate);
 
-        Key rPrivateKey = caKeyStore.getKey(caKeyStoreRootAlias, caKeyStoreRootKeyPassword.toCharArray());
-        X509Certificate rCertificate = (X509Certificate) caKeyStore.getCertificate(caKeyStoreRootAlias);
-        KeyPair rCaKeyPair = new KeyPair(rCertificate.getPublicKey(), (PrivateKey)rPrivateKey);
-        Identity rIdentity = new Identity(rCaKeyPair, rCertificate);
+        //Key rPrivateKey = caKeyStore.getKey(caKeyStoreRootAlias, caKeyStoreRootKeyPassword.toCharArray());
+        //X509Certificate rCertificate = (X509Certificate) caKeyStore.getCertificate(caKeyStoreRootAlias);
+        //KeyPair rCaKeyPair = new KeyPair(rCertificate.getPublicKey(), (PrivateKey)rPrivateKey);
+        Identity rIdentity = new Identity(null, (X509Certificate)caKeyStore.getCertificate(caKeyStoreRootAlias));
 
         CAService.caIdentityChain = new Identity[] {
             rIdentity, iIdentity
@@ -96,7 +113,7 @@ public class CAService {
      */
     public static KeyStore loadKeystore() {
         try {
-            File file = new File(CAUtil.cryptoPath + caKeyStoreFile);
+            File file = new File(CAUtil.CRYPTO_PATH + CA_SIGNING_KEY_STORE_FILE);
             if (!file.exists()) {
                 return null;
             }
@@ -157,23 +174,45 @@ public class CAService {
 
             // Turn into PKCS12
 
-            KeyStore store = KeyStore.getInstance("PKCS12");
+            KeyStore intermediateStore = KeyStore.getInstance("PKCS12");
 
             X509Certificate[] rootChain = new X509Certificate[] { rootCertificate };
             X509Certificate[] intermediateChain = new X509Certificate[] { intermediateCertificate, rootCertificate };
 
-            store.load(null, null);
-            store.setKeyEntry(caKeyStoreRootAlias, rootKeyPair.getPrivate(), caKeyStoreRootKeyPassword.toCharArray(), rootChain);
-            store.setKeyEntry(caKeyStoreIntermediateAlias, intermediateKeyPair.getPrivate(), caKeyStoreIntermediateKeyPassword.toCharArray(), intermediateChain);
+            intermediateStore.load(null, null);
+            // Don't load the CA key into the signing keystore
+            // store.setKeyEntry(caKeyStoreRootAlias, rootKeyPair.getPrivate(), caKeyStoreRootKeyPassword.toCharArray(), rootChain);
+            intermediateStore.setCertificateEntry(caKeyStoreRootAlias, rootCertificate);
+            intermediateStore.setKeyEntry(caKeyStoreIntermediateAlias, intermediateKeyPair.getPrivate(), caKeyStoreIntermediateKeyPassword.toCharArray(), intermediateChain);
 
-            String path = CAUtil.cryptoPath + caKeyStoreFile;
+            String path = CAUtil.CRYPTO_PATH + CA_SIGNING_KEY_STORE_FILE;
             File file = new File(path);
             file.createNewFile();
 
             FileOutputStream fOut = new FileOutputStream(file);
-            store.store(fOut, caKeyStorePassword.toCharArray());
+            intermediateStore.store(fOut, caKeyStorePassword.toCharArray());
 
-            return store;
+            // Save the root store
+            KeyStore rootStore = KeyStore.getInstance("PKCS12");
+            rootStore.load(null, null);
+            rootStore.setKeyEntry(caKeyStoreRootAlias, rootKeyPair.getPrivate(), caKeyStoreRootKeyPassword.toCharArray(), rootChain);
+            String rootPath = CAUtil.CRYPTO_PATH + CA_ROOT_KEY_STORE_FILE;
+            File rootFile = new File(rootPath);
+            rootFile.createNewFile();
+            FileOutputStream rootOutputstream = new FileOutputStream(rootFile);
+            char[] rp = randomPassword(20);
+            rootStore.store(rootOutputstream, rp);
+
+            // Save password to file
+            File passwordFile = new File(CAUtil.CRYPTO_PATH + CA_ROOT_KEY_STORE_PSW_FILE);
+            passwordFile.createNewFile();
+            FileWriter fileWriter = new FileWriter(passwordFile);
+            fileWriter.write(rp);
+            fileWriter.close();
+
+            logger.warn("Generated new CA identity, root key stored at " + rootFile.getAbsolutePath());
+
+            return intermediateStore;
 
         } catch (CertificateException | NoSuchAlgorithmException | KeyStoreException | IOException e) {
             throw new PKIServiceException("Could not generate CA", e);
@@ -204,6 +243,14 @@ public class CAService {
         nameBuilder.addRDN(BCStyle.O, "iMovies");
         nameBuilder.addRDN(BCStyle.OU, "Admin");
         return nameBuilder.build();
+    }
+
+    private char[] randomPassword(int size) {
+        char[] str = new char[size];
+        for (int i = 0; i < size; i++) {
+            str[i] = (char) (new Random().nextInt(40) + 40);
+        }
+        return str;
     }
 
     /**
