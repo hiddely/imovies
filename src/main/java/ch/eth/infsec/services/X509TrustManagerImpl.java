@@ -32,9 +32,11 @@ public class X509TrustManagerImpl implements X509TrustManager {
             CertPathBuilder builder = CertPathBuilder.getInstance("PKIX");
             CertPathBuilderResult result = builder.build(params);
 
-            X509CRL crl = new JcaX509CRLConverter().getCRL(CertificateStoreService.crl);
-            if (crl.getRevokedCertificate(x509Certificates[0]) != null) {
-                throw new CertificateException("Certificate was revoked");
+            if (CertificateStoreService.crl != null) {
+                X509CRL crl = new JcaX509CRLConverter().getCRL(CertificateStoreService.crl);
+                if (crl.getRevokedCertificate(x509Certificates[0]) != null) {
+                    throw new CertificateException("Certificate was revoked");
+                }
             }
 
         } catch (KeyStoreException | InvalidAlgorithmParameterException | CRLException | NoSuchAlgorithmException | CertPathBuilderException e) {

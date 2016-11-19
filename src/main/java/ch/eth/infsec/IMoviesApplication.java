@@ -38,11 +38,29 @@ public class IMoviesApplication {
 	@PostConstruct
 	public void addBCProvider() {
 		Security.addProvider(new BouncyCastleProvider());
-		Security.setProperty("ocsp.enable", "true");
 
 		// generate the CA
 		CAService.Identity caIdentity = caService.getSigningIdentity();
 		IMoviesApplication.intermediateCertificate = caIdentity.getCertificate();
+	}
+
+	@Bean
+	public EmbeddedServletContainerCustomizer customizer() {
+		return new EmbeddedServletContainerCustomizer() {
+
+			@Override
+			public void customize(ConfigurableEmbeddedServletContainer configurableEmbeddedServletContainer) {
+				TomcatEmbeddedServletContainerFactory tomcat = (TomcatEmbeddedServletContainerFactory) configurableEmbeddedServletContainer;
+				//this will only handle the case where SSL is enabled on the main tomcat connector
+				tomcat.addConnectorCustomizers(new TomcatConnectorCustomizer() {
+					@Override
+					public void customize(Connector connector) {
+						Http11NioProtocol handler = (Http11NioProtocol) connector.getProtocolHandler();
+						handler.setTrustManagerClassName(X509TrustManagerImpl.class.getName());
+					}
+				});
+			}
+		};
 	}
 
 	//@PostConstruct
