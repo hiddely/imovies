@@ -9,8 +9,10 @@
 # eth2 is DMZ interface, #eth1 is LAN interface
 -A POSTROUTING -o eth2 -j MASQUERADE
 
-# NAT pinhole: SSH from DMZ to LAN
+# NAT pinhole: SSH from DMZ to LAN, for database tunnel
 -A PREROUTING -p tcp -m tcp -i eth2 --dport 22 -j DNAT --to-destination 10.0.0.5:22
+# SCP from DMZ to LAN, for backup
+-A PREROUTING -p tcp -m tcp -i eth2 --dport 8022 -j DNAT --to-destination 10.0.0.6:22
 
 COMMIT
 
@@ -41,6 +43,7 @@ COMMIT
 
 # allow traffic from our NAT pinhole
 -A FORWARD -p tcp -d 10.0.0.5 --dport 22 -j ACCEPT
+-A FORWARD -p tcp -d 10.0.0.6 --dport 22 -j ACCEPT
 
 # drop all other forwarded traffic
 -A FORWARD -j DROP
