@@ -3,6 +3,8 @@ package ch.eth.infsec.services;
 import ch.eth.infsec.model.User;
 import ch.eth.infsec.services.pki.PKIService;
 import org.bouncycastle.asn1.x500.X500Name;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.AuthenticationUserDetailsService;
@@ -15,6 +17,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class AuthenticationX509UserDetailsService implements AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> {
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     UserService userService;
@@ -31,23 +35,20 @@ public class AuthenticationX509UserDetailsService implements AuthenticationUserD
             throw new UsernameNotFoundException("Certificate is invalid.");
         }
 
-        System.out.println("Certificate: " + certificate.getSerialNumber().toString());
-
         String subjectDN = certificate.getSubjectDN().toString();
         final String patternCN = "CN=(.*?),";
         final String patternOU = "OU=(.*?),";
 
-
-
         // check if user is admin
         String userType = extractFromDN(subjectDN, patternOU);
         if (userType.equals("Admin")) {
-            System.out.println("User is admin!");
+
+            logger.info("Authentication successful for admin with certificate. (DN: " + certificate.getSubjectDN().toString() + ")");
 
             User adminUser = new User();
             adminUser.setFirstname("iMovies");
             adminUser.setLastname("Admin");
-            adminUser.setEmail("admin@imovies.com");
+            adminUser.setEmail("admin@imovies.ch");
 
             ch.eth.infsec.model.UserDetails userDetails = new ch.eth.infsec.model.UserDetails(adminUser);
 
@@ -56,6 +57,8 @@ public class AuthenticationX509UserDetailsService implements AuthenticationUserD
 
             return userDetails;
         } else if (userType.equals("Personal")) {
+
+            logger.info("Authentication successful for user with certificate. (DN: " + certificate.getSubjectDN().toString() + ")");
 
             String cn = extractFromDN(subjectDN, patternCN);
             User user = userService.findByUid(cn);
@@ -70,6 +73,8 @@ public class AuthenticationX509UserDetailsService implements AuthenticationUserD
 
             return userDetails;
         } else {
+            logger.info("Authentication failed for certificate. (DN: " + certificate.getSubjectDN().toString() + ")");
+
             throw new InvalidCertificateException("User is of invalid type");
         }
 

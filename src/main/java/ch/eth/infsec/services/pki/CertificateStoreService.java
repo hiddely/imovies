@@ -1,8 +1,6 @@
 package ch.eth.infsec.services.pki;
 
 import ch.eth.infsec.util.CAUtil;
-import org.bouncycastle.asn1.BERGenerator;
-import org.bouncycastle.asn1.BEROctetStringGenerator;
 import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.style.BCStyle;
@@ -13,10 +11,6 @@ import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.cert.*;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
-import org.bouncycastle.jce.provider.X509CRLParser;
-import org.bouncycastle.util.io.pem.PemObject;
-import org.bouncycastle.util.io.pem.PemObjectGenerator;
-import org.bouncycastle.util.io.pem.PemWriter;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
@@ -33,11 +27,11 @@ import java.util.stream.Collectors;
 public class CertificateStoreService {
 
     public static KeyStore trustStore;
-    File trustStoreFile = new File(CAUtil.cryptoPath + "trust.jks");
+    File trustStoreFile = new File(CAUtil.CRYPTO_PATH + "trust.jks");
     final String trustStorePassword = "imoviestruststore";
 
     public static X509CRLHolder crl;
-    File crlFile = new File(CAUtil.cryptoPath + "revoked.crl");
+    File crlFile = new File(CAUtil.CRYPTO_PATH + "revoked.crl");
 
     public CertificateStoreService() throws GeneralSecurityException, IOException {
 
@@ -139,7 +133,7 @@ public class CertificateStoreService {
         if (pkiProperties != null) {
             return pkiProperties;
         }
-        File configFile = new File(CAUtil.cryptoPath + "config.properties");
+        File configFile = new File(CAUtil.CRYPTO_PATH + "config.properties");
 
         try {
             configFile.createNewFile();
@@ -160,7 +154,7 @@ public class CertificateStoreService {
 
     public void saveProperties() {
         if (pkiProperties != null) {
-            File configFile = new File(CAUtil.cryptoPath + "config.properties");
+            File configFile = new File(CAUtil.CRYPTO_PATH + "config.properties");
             try {
                 FileWriter writer = new FileWriter(configFile);
                 pkiProperties.store(writer, "ca settings");

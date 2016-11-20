@@ -3,3 +3,5 @@ config.properties
 revoked.crl
 trust.jks
 imoviesca.pfx
+imoviescaroot.pfx
+rootpsw.txt

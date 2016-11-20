@@ -38,7 +38,6 @@ public class IMoviesApplication {
 	@PostConstruct
 	public void addBCProvider() {
 		Security.addProvider(new BouncyCastleProvider());
-		Security.setProperty("ocsp.enable", "true");
 
 		// generate the CA
 		CAService.Identity caIdentity = caService.getSigningIdentity();
@@ -57,33 +56,7 @@ public class IMoviesApplication {
 					@Override
 					public void customize(Connector connector) {
 						Http11NioProtocol handler = (Http11NioProtocol) connector.getProtocolHandler();
-						File crlFile = new File("src/main/resources/crypto/revoked.crl");
-						File caFile = new File("src/main/resources/crypto/imoviesca.pfx");
-						File trustFile = new File("src/main/resources/crypto/trust.jks");
-						if (crlFile.exists()) {
-							/*SSLHostConfig config = new SSLHostConfig();
-							config.setCertificateKeystoreFile("serverIdentity.p12");
-							config.setCertificateKeystorePassword("imovies");
-							config.setCertificateKeystoreType("PKCS12");
-							config.setCertificateKeyAlias("imovies.com");
-							config.*/
-
-							//SSLHostConfig config = connector.findSslHostConfigs()[0];
-
-							//config.setCertificateRevocationListFile(crlFile.getAbsolutePath());
-							//config.setTruststoreFile(trustFile.getAbsolutePath());
-							//config.setTruststorePassword("imoviestruststore");
-							//config.setTruststoreProvider("JKS");
-							//config.setHostName("imovies.com");
-
-							//connector.addSslHostConfig(config);
-							handler.setCrlFile(crlFile.getAbsolutePath());
-
-							handler.setTrustManagerClassName(X509TrustManagerImpl.class.getName());
-
-							//connector.
-							System.out.println("Hi");
-						}
+						handler.setTrustManagerClassName(X509TrustManagerImpl.class.getName());
 					}
 				});
 			}

@@ -18,7 +18,7 @@ import static org.junit.Assert.assertNotNull;
 @SpringBootTest
 public class PKIServiceTest {
 
-    File cryptoFolder = new File(CAUtil.cryptoPath);
+    File cryptoFolder = new File(CAUtil.CRYPTO_PATH);
     User user = new User();
 
     @Autowired
@@ -26,7 +26,7 @@ public class PKIServiceTest {
 
     @Before
     public void setUp() throws Exception {
-        //deleteFolder(cryptoPath);
+        //deleteFolder(CRYPTO_PATH);
 
         user.setUid("ABC");
         user.setEmail("hello@gmail.com");

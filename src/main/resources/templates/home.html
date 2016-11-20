@@ -14,7 +14,7 @@
 
     <h1>iMovies</h1>
 
-    <h1 th:inline="text">Hello [[${#httpServletRequest.remoteUser}]]!</h1>
+    <p th:inline="text">User: [[${#httpServletRequest.remoteUser}]]</p>
 
     <p th:unless="${#httpServletRequest.remoteUser != null}">Click <a th:href="@{/login}">here</a> to login.</p>
 

@@ -221,7 +221,7 @@ public class PKIServiceImpl implements PKIService {
             store.load(null, null);
             store.setKeyEntry("Client key", keyPair.getPrivate(), password.toCharArray(), certificates);
 
-            String path = CAUtil.cryptoPath + "certificates/";
+            String path = CAUtil.CRYPTO_PATH + "certificates/";
             String filename = "admin-" + System.currentTimeMillis() + ".p12";
             if (user != null) {
                 filename =  user.getUid() + "-" + System.currentTimeMillis() + ".p12";

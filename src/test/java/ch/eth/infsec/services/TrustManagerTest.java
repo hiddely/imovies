@@ -74,7 +74,7 @@ public class TrustManagerTest {
             X509CertSelector target = new X509CertSelector();
             target.setCertificate(targetCert);
 
-            CAService.Identity rootId = CAService.caIdentityChain[0];
+            //CAService.Identity rootId = CAService.caIdentityChain[0];
             //anchorStore.setCertificateEntry("root", rootId.getCertificate());
 
             KeyStore caKeystore = CAService.loadKeystore();
