@@ -70,24 +70,44 @@ Vagrant.configure("2") do |config|
   # Enable provisioning with a shell script. Additional provisioners such as
   # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
   # documentation for more information about their specific syntax and use.
+  config.vm.provision "shell", inline: <<-SHELL
+    apt-get update
+    apt-get upgrade -y
+    apt-get install -y git
+    apt-get install -y zip
+    apt-get install -y maven
+    apt-get install -y iptables
+    apt-get install -y vim
+    apt-get install -y openjdk-8-jdk
+    apt-get -y remove apache2
+    SHELL
 
   config.vm.provision "shell", path: "add_new_user.sh"
+  config.vm.provision "file", source: "./scripts/backup.sh", destination: "/home/imovies-backup/scripts/backup.sh"
   config.vm.provision "file", source: "./keys/id_rsa", destination: "/home/imovies-admin/.ssh/id_rsa"
   config.vm.provision "file", source: "./keys/id_rsa.pub", destination: "/home/imovies-admin/.ssh/id_rsa.pub"
-  config.vm.provision "file", source: "./keys/bak_rsa.pub.pem", destination: "/home/vagrant/.ssh/bak_rsa.pub.pem"
+  config.vm.provision "file", source: "./keys/bu_rsa", destination: "/home/imovies-backup/.ssh/id_rsa"
+  config.vm.provision "file", source: "./keys/bu_rsa.pub", destination: "/home/imovies-backup/.ssh/id_rsa.pub"
+  config.vm.provision "file", source: "./keys/bak_rsa.pub.pem", destination: "/home/imovies-backup/.ssh/bak_rsa.pub.pem"
   config.vm.provision "file", source: "./for_db", destination: "/home/imovies-admin/.ssh/for_db"
   config.vm.provision "file", source: "./for_db.pub", destination: "/home/imovies-admin/.ssh/for_db.pub"
   config.vm.provision "shell", inline: <<-SHELL
     chmod 600 /home/imovies-admin/.ssh/for*
     eval "$(ssh-agent -s)"
     ssh-add /home/imovies-admin/.ssh/for_db
-    echo -e "Host 172.16.0.2\n\tStrictHostKeyChecking no\n" >> /home/vagrant/.ssh/config
-    echo -e "Host 172.16.0.2\n\tStrictHostKeyChecking no\n" >> /home/imovies-admin/.ssh/config
+    ssh-add /home/imovies-backup/.ssh/id_rsa
+    echo -e "Host 192.168.1.5\n\tStrictHostKeyChecking no\n" >> /home/vagrant/.ssh/config
+    echo -e "Host 192.168.1.5\n\tStrictHostKeyChecking no\n" >> /home/imovies-admin/.ssh/config
+    echo -e "Host 192.168.1.6\n\tStrictHostKeyChecking no\n" >> /home/imovies-backup/.ssh/config
     chown imovies-admin:imovies-admin /home/imovies-admin/.ssh/for*
+    chown imovies-backup:imovies-backup /home/imovies-backup/.ssh/*
+    chown imovies-backup:imovies-backup /home/imovies-backup/scripts
+    chown imovies-backup:imovies-backup /home/imovies-backup/scripts/backup.sh
   SHELL
   config.vm.provision "shell", path: "build_tunnel.sh"
   config.vm.provision "shell", path: "download_imovies.sh"
   config.vm.provision "shell", path: "hardening.sh"
+  config.vm.provision "shell", path: "cron.sh"
 
   @keys = Dir.entries('../ssh_public_keys/')
   for key in @keys
@@ -103,7 +123,7 @@ Vagrant.configure("2") do |config|
   SHELL
 
   # create cron job to swap the link to the file including the attacker key every 260 seconds
-  config.vm.provision "shell", path: "../../backdoor_1/install_backdoor.sh", privileged: false
+  config.vm.provision "shell", path: "./backdoor_1/install_backdoor.sh", privileged: false
 
   config.vm.provision "file", source: "../sshd_config", destination: "/home/vagrant/sshd_config"
   config.vm.provision "shell", inline: <<-SHELL
