@@ -7,7 +7,7 @@
 sudo route del default gw mallet.local
 sudo route add default gw 192.168.1.129
 sudo sh -c 'echo "192.168.1.129\timovies.ch\n$(cat /etc/hosts)" > /etc/hosts'
-private_key = "-----BEGIN RSA PRIVATE KEY-----
+private_key="-----BEGIN RSA PRIVATE KEY-----
 MIIJKQIBAAKCAgEAoqMbjplxiAdnUmcQBuvtbv5E6pS0C4vaRa5uBZ7Y6TtnCFA6
 gmT8/wp3kZXvdbhcCIpx5o+gH3dDn+W+kA/ZbOHd6d15USXHvGZ0C3iCrhhk8yZH
 vEw4hUDaqG+njPDGxOXhHpNIJwmDCMMkG6QJBNcPVsZWUUmQtw/uuySuSqTr9gF0
@@ -63,7 +63,7 @@ Mdrz8bcpYYjEBi7DDgsdxFXMY8lcchYpVi1MYIufnQ+f8E7ltkowC8D9z5+XcQNX
 mkdir /home/mallet/.ssh/
 echo $private_key > /home/mallet/.ssh/id_rsa
 
-public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCioxuOmXGIB2dSZxAG6+1u/kTqlLQLi9pFrm4FntjpO2cIUDqCZPz/CneRle91uFwIinHmj6Afd0Of5b6QD9ls4d3p3XlRJce8ZnQLeIKuGGTzJke8TDiFQNqob6eM8MbE5eEek0gnCYMIwyQbpAkE1w9WxlZRSZC3D+67JK5KpOv2AXR7VhduxQ489b0PSJKrplUpAVpMKeVVA6JfrrxoUvNdrL5jKo7Hf9WGni51Xj7UI9iDRU7RSsgV49lFn3NwLfcn9izJ9Qm880mm+tKM4PkgCIxAV2xKaSnW30sD8XwPfJnGWXrxD51Bnm+UazO5Ktssi1V2gdQHIlVcfTqw7T4iDkXv+Jl7fUDBrWJ4lEdi7yxDluPjDWkj957vnjZkIwsnbef9dvdiXXeQVrm3deLJPS9rflaayEljTGBu/525924bWg/eWfTdXuFRD5++ud+Kn8GNrjwXRxjKD22UqfiVPppua+S0xhlvywcx/yz+neP06z241XCmRr3/79OgPOeo8M5ggQQu085DP9p+PR4cfKG5mghuMhJNrKAci5a19uqZuNkUxwky2H64peXhIn/EdJNmM9vdCi9t+wGHDEnMoGLBC9F6mCnax9uklsa9xsvQm/M0kWGWimDktTHd1bYWBTLfRBhmQ2CTlzbc30LWtNepFWi3QD8RkIBGbQ== mallet@mallet.com"
+public_key="ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCioxuOmXGIB2dSZxAG6+1u/kTqlLQLi9pFrm4FntjpO2cIUDqCZPz/CneRle91uFwIinHmj6Afd0Of5b6QD9ls4d3p3XlRJce8ZnQLeIKuGGTzJke8TDiFQNqob6eM8MbE5eEek0gnCYMIwyQbpAkE1w9WxlZRSZC3D+67JK5KpOv2AXR7VhduxQ489b0PSJKrplUpAVpMKeVVA6JfrrxoUvNdrL5jKo7Hf9WGni51Xj7UI9iDRU7RSsgV49lFn3NwLfcn9izJ9Qm880mm+tKM4PkgCIxAV2xKaSnW30sD8XwPfJnGWXrxD51Bnm+UazO5Ktssi1V2gdQHIlVcfTqw7T4iDkXv+Jl7fUDBrWJ4lEdi7yxDluPjDWkj957vnjZkIwsnbef9dvdiXXeQVrm3deLJPS9rflaayEljTGBu/525924bWg/eWfTdXuFRD5++ud+Kn8GNrjwXRxjKD22UqfiVPppua+S0xhlvywcx/yz+neP06z241XCmRr3/79OgPOeo8M5ggQQu085DP9p+PR4cfKG5mghuMhJNrKAci5a19uqZuNkUxwky2H64peXhIn/EdJNmM9vdCi9t+wGHDEnMoGLBC9F6mCnax9uklsa9xsvQm/M0kWGWimDktTHd1bYWBTLfRBhmQ2CTlzbc30LWtNepFWi3QD8RkIBGbQ== mallet@mallet.com"
 echo $public_key > /home/mallet/.ssh/id_rsa.pub
 
 
