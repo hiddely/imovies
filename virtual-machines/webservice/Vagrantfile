@@ -31,8 +31,6 @@ Vagrant.configure("2") do |config|
   config.vm.network "private_network", ip: "172.16.0.4", auto_config: false, virtualbox__intnet: "InfSec_DMZ"
   # And since vagrant has trouble with additional interfaces in Ubuntu 16.04, also add manually the interface:
   config.vm.provision 'shell', inline: "ifconfig eth1 172.16.0.4"
-  config.vm.provision 'shell', inline: "route del default"
-  config.vm.provision 'shell', inline: "route add default gw 172.16.0.1 eth1"
 
   # Create a public network, which generally matched to bridged network.
   # Bridged networks make the machine appear as another physical device on
@@ -96,16 +94,21 @@ Vagrant.configure("2") do |config|
     eval "$(ssh-agent -s)"
     ssh-add /home/imovies-admin/.ssh/for_db
     ssh-add /home/imovies-backup/.ssh/id_rsa
-    echo -e "Host 192.168.1.5\n\tStrictHostKeyChecking no\n" >> /home/vagrant/.ssh/config
-    echo -e "Host 192.168.1.5\n\tStrictHostKeyChecking no\n" >> /home/imovies-admin/.ssh/config
-    echo -e "Host 192.168.1.6\n\tStrictHostKeyChecking no\n" >> /home/imovies-backup/.ssh/config
+    echo -e "Host 172.16.0.2\n\tStrictHostKeyChecking no\n" >> /home/imovies-admin/.ssh/config
+    echo -e "Host 172.16.0.2\n\tStrictHostKeyChecking no\n" >> /home/imovies-backup/.ssh/config
     chown imovies-admin:imovies-admin /home/imovies-admin/.ssh/for*
     chown imovies-backup:imovies-backup /home/imovies-backup/.ssh/*
     chown imovies-backup:imovies-backup /home/imovies-backup/scripts
     chown imovies-backup:imovies-backup /home/imovies-backup/scripts/backup.sh
   SHELL
-  config.vm.provision "shell", path: "build_tunnel.sh"
+
   config.vm.provision "shell", path: "download_imovies.sh"
+  
+  config.vm.provision 'shell', inline: "route del default"
+  config.vm.provision 'shell', inline: "route add default gw 172.16.0.1 eth1"
+
+  config.vm.provision "shell", path: "build_tunnel.sh"
+
   config.vm.provision "shell", path: "hardening.sh"
   config.vm.provision "shell", path: "cron.sh"
 
