@@ -1,0 +1,25 @@
+# This file describes the network interfaces available on your system
+# and how to activate them. For more information, see interfaces(5).
+
+source /etc/network/interfaces.d/*
+
+# The loopback network interface
+auto lo
+iface lo inet loopback
+
+# The primary network interface, used for the administrative vagrant overlay access
+auto eth0
+iface eth0 inet dhcp
+
+# The DMZ interface, InfSec_DMZ
+auto eth1
+iface eth1 inet static
+        address 172.16.0.1
+        netmask 255.240.0.0
+
+# The WAN interface, InfSec_WAN
+auto eth2
+iface eth2 inet static
+        address 192.168.1.129
+        netmask 255.255.0.0
+

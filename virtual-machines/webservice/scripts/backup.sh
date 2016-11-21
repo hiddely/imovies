@@ -42,8 +42,8 @@ rm -f $BACKUP_DIR/key.pem
 echo "=== ENCRYPTED ===";
 echo "=== UPLOADING TO SERVER ===";
 
-scp -P 22 $BACKUP_DIR/key.$DATESTRING.bin.enc vagrant@192.168.1.6:~/backups/
-scp -P 22 $BACKUP_DIR/digest.$DATESTRING.zip.enc vagrant@192.168.1.6:~/backups/
+scp -P 8022 $BACKUP_DIR/key.$DATESTRING.bin.enc vagrant@172.16.0.2:~/backups/
+scp -P 8022 $BACKUP_DIR/digest.$DATESTRING.zip.enc vagrant@172.16.0.2:~/backups/
 
 # Local, to test
 #cp $BACKUP_DIR/key.bin.enc ~/Desktop/key.bin.enc

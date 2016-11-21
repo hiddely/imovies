@@ -27,9 +27,9 @@ Vagrant.configure("2") do |config|
   # Create a private network, which allows host-only access to the machine
   # using a specific IP.
   # config.vm.network "private_network", ip: "192.168.33.10"
-  config.vm.network "private_network", ip: "192.168.1.6", auto_config: false, virtualbox__intnet: "InfSec"
+  config.vm.network "private_network", ip: "10.0.0.6", auto_config: false, virtualbox__intnet: "InfSec_LAN"
   # And since vagrant has trouble with additional interfaces in Ubuntu 16.04, also add manually the interface:
-  config.vm.provision 'shell', inline: "ifconfig eth1 192.168.1.6"
+  config.vm.provision 'shell', inline: "ifconfig eth1 10.0.0.6; ifconfig eth1 up"
 
   # Create a public network, which generally matched to bridged network.
   # Bridged networks make the machine appear as another physical device on
@@ -69,6 +69,7 @@ Vagrant.configure("2") do |config|
   # documentation for more information about their specific syntax and use.
   config.vm.provision "shell", inline: <<-SHELL
     apt-get update
+    apt-get dist-upgrade -y
     apt-get install -y iptables
     apt-get install -y unzip
   SHELL
@@ -95,6 +96,8 @@ Vagrant.configure("2") do |config|
     chmod 600 /home/vagrant/.ssh/authorized_keys
   SHELL
 
+  config.vm.provision 'shell', inline: "route del default"
+  config.vm.provision 'shell', inline: "route add default gw 10.0.0.1 eth1"
 
   config.vm.provision "file", source: "../sshd_config", destination: "/home/vagrant/sshd_config"
   config.vm.provision "shell", inline: <<-SHELL
