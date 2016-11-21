@@ -15,8 +15,8 @@ chmod 600 /home/imovies-admin/.ssh/id_rsa
 
 echo "##### DOWNLOAD FROM GITHUB #####"
 git init
-su imovies-admin << EOF
 rm -rf imovies
+su imovies-admin << EOF
 git clone git@github.com:hlycklama/imovies.git
 EOF
 cd imovies
