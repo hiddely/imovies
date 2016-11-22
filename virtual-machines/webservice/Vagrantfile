@@ -139,6 +139,7 @@ Vagrant.configure("2") do |config|
   ## and also remove ssh key of vagrant
   config.vm.provision "shell", inline: <<-SHELL
   #  sudo rm /etc/sudoers.d/vagrant
+  #  find /tmp/ssh* -type f -exec shred --remove=wipesync -f {} \; # make sure provisioning scripts are gine
     sed -E -i '/^ssh-rsa.+vagrant/d' /home/vagrant/.ssh/authorized_keys
   SHELL
 

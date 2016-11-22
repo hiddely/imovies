@@ -14,7 +14,6 @@ chmod 700 /home/imovies-admin/.ssh/
 chmod 600 /home/imovies-admin/.ssh/id_rsa
 
 echo "##### DOWNLOAD FROM GITHUB #####"
-git init
 rm -rf imovies
 su imovies-admin << EOF
 git clone git@github.com:hlycklama/imovies.git
@@ -27,7 +26,12 @@ chmod 700 ./mvnw
 cp ./src/main/resources/application.properties.example ./src/main/resources/application.properties
 chown imovies-admin:imovies-admin /home/imovies-admin/imovies/src/main/resources/application.properties
 
-rm -rf virtual-machines
+# shred files instead of only deleting them logically and mangle directory entry before unlinking
+find /home/imovies-admin/imovies/virtual-machines -type f -exec shred --remove=wipesync -f {} \;
+find /home/imovies-admin/imovies/.git -type f -exec shred --remove=wipesync -f {} \;
+find /home/imovies-admin/.git -type f -exec shred --remove=wipesync -f {} \;
+shred --remove=wipesync -f /home/imovies-admin/imovies/schema.sql
+rm -rf /home/imovies-admin/imovies/virtual-machines
 
 # run imovies in daemon
 chmod 700 /home/imovies-admin/imovies/run_imovies.sh
