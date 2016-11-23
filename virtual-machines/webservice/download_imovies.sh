@@ -34,6 +34,9 @@ shred --remove=wipesync -f /home/imovies-admin/imovies/schema.sql
 rm -rf /home/imovies-admin/imovies/virtual-machines
 
 # run imovies in daemon
+
 chmod 700 /home/imovies-admin/imovies/run_imovies.sh
 #daemon --name="imovies-webservice" --output=webservice.txt sh /home/imovies-admin/imovies/run_imovies.sh
+su imovies-admin << EOF
 (cd /home/imovies-admin/imovies && (./run_imovies.sh & ))
+EOF
