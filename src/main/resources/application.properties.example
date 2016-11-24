@@ -11,3 +11,5 @@ server.ssl.key-store-password=304bKavMeETSKJGn
 server.ssl.key-store-type=PKCS12
 server.ssl.key-alias=imovies.ch
 server.ssl.client-auth=want
+
+logging.path=/var/log

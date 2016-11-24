@@ -13,6 +13,7 @@ rm -rf $BACKUP_DIR
 mkdir $BACKUP_DIR
 mkdir $BACKUP_DIR/original
 cd $BACKUP_DIR/original
+mkdir identities
 
 # all files to be backed up
 cp /var/log/syslog $BACKUP_DIR/original
@@ -20,6 +21,8 @@ cp /var/log/auth.log $BACKUP_DIR/original
 cp /var/log/kern.log $BACKUP_DIR/original
 cp /var/log/faillog $BACKUP_DIR/original
 cp /var/log/lastlog $BACKUP_DIR/original
+cp /var/log/spring.log $BACKUP_DIR/original
+cp /home/imovies-admin/imovies/src/main/resources/crypto/certificates/* $BACKUP_DIR/original/identities
 echo "=== DUMPING DATABASE ===";
 mysqldump -P 3306 -h 127.0.0.1 -u webservice -pwebservice imovies > $BACKUP_DIR/original/database.sql
 echo "=== END DATABASE DUMP ===";
