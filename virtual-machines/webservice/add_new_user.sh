@@ -1,8 +1,8 @@
 #!/bin/bash
 
 sudo adduser imovies-admin <<!
-password
-password
+8Q264d80&YZEgHqpS*oe
+8Q264d80&YZEgHqpS*oe
 !
 
 # remove before recreating to get rid of provisioning error
@@ -14,8 +14,8 @@ chmod o+w /home/imovies-admin/.ssh
 
 # add backup user
 sudo adduser imovies-backup <<!
-password
-password
+xU103&44k1M7Lgydb$&$
+xU103&44k1M7Lgydb$&$
 !
 
 # Give user access to adm group to view log files

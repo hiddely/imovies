@@ -1,8 +1,8 @@
 #!/bin/bash
 
 sudo adduser imovies-backup <<!
-password
-password
+tA479@4k9ZIy3pHD!vkx
+tA479@4k9ZIy3pHD!vkx
 !
 
 # remove before recreating to get rid of provisioning error
