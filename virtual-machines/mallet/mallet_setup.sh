@@ -4,8 +4,10 @@
 # But first, make sure that in the VirtualBox
 # network configuration mallet is in the internal network InfSec_WAN
 
-sudo route del default gw mallet.local
-sudo route add default gw 192.168.1.129
+sudo ifconfig eth4 192.168.1.3
+sudo ifconfig eth4 up
+sudo route del default
+sudo route add default gw 192.168.1.129 eth4
 sudo sh -c 'echo "192.168.1.129\timovies.ch\n$(cat /etc/hosts)" > /etc/hosts'
 private_key="-----BEGIN RSA PRIVATE KEY-----
 MIIJKQIBAAKCAgEAoqMbjplxiAdnUmcQBuvtbv5E6pS0C4vaRa5uBZ7Y6TtnCFA6

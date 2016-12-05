@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 
 echo "Move files to final destination"
 chown root:root /home/vagrant/networking/*

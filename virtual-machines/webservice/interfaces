@@ -10,19 +10,13 @@ iface lo inet loopback
 # The primary network interface, used for the administrative vagrant overlay access
 auto eth0
 iface eth0 inet dhcp
-
-# The LAN interface, InfSec_LAN
-auto eth1
-iface eth1 inet static
-        address 10.0.0.1
-        netmask 255.255.0.0
+        post-up route del default eth0
 
 # The DMZ interface, InfSec_DMZ
-auto eth2
-iface eth2 inet static
-        address 172.16.0.2
+auto eth1
+iface eth1 inet static
+        address 172.16.0.4
         netmask 255.240.0.0
         ### Ubuntu Linux add persistent route command ###
-        post-up route add default gw 172.16.0.1 eth2
-        pre-down route del default gw 172.16.0.1 eth2
-
+        post-up route add default gw 172.16.0.1 eth1
+        pre-down route del default gw 172.16.0.1 eth1

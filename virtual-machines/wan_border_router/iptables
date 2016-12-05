@@ -12,13 +12,13 @@
 -A POSTROUTING -o eth0 -j MASQUERADE
 
 # NAT pinhole: SSH from WAN to LAN
--A PREROUTING -p tcp -m tcp -i eth2 --dport 22 -j DNAT --to-destination 172.16.0.4:22
+-A PREROUTING -p tcp -m tcp -i eth2 --destination 192.168.1.129 --dport 22 -j DNAT --to-destination 172.16.0.4:22
 
 # NAT pinhole: HTTPS from WAN to LAN
--A PREROUTING -p tcp -m tcp -i eth2 --dport 443 -j DNAT --to-destination 172.16.0.4:8443
+-A PREROUTING -p tcp -m tcp -i eth2 --destination 192.168.1.129 --dport 443 -j DNAT --to-destination 172.16.0.4:8443
 
 # NAT pinhole: HTTP from WAN to LAN
--A PREROUTING -p tcp -m tcp -i eth2 --dport 80 -j DNAT --to-destination 172.16.0.4:8080
+-A PREROUTING -p tcp -m tcp -i eth2 --destination 192.168.1.129 --dport 80 -j DNAT --to-destination 172.16.0.4:8080
 
 COMMIT
 
@@ -52,6 +52,8 @@ COMMIT
 -A FORWARD -i eth1 -o eth2 -j ACCEPT
 # forward from DMZ (eth1) to host network (eth0)
 -A FORWARD -i eth1 -o eth0 -j ACCEPT
+# forward from WAN to host network, but not for the destination address 192.168.1.129
+-A FORWARD -i eth2 ! --destination 192.168.1.129 -o eth0 -j ACCEPT
 
 # allow traffic from our NAT pinholes
 -A FORWARD -p tcp -d 172.16.0.4 --dport 22 -j ACCEPT

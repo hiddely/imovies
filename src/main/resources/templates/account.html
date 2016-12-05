@@ -45,7 +45,7 @@
                     </div>
                     <div class="form-group">
                         <label for="password">New password (leave empty for no change)</label>
-                        <input type="text" th:field="*{password}" class="form-control" />
+                        <input type="text" th:field="*{password}" class="form-control"  onKeyUp="(this.value.length != 0) ? document.getElementById('issueButton').removeAttribute('disabled') : document.getElementById('issueButton').setAttribute('disabled', 'disabled')"/>
                     </div>
                     <p><button class="btn btn-primary" type="submit" value="Submit">Submit</button> <button class="btn btn-danger" type="reset">Reset</button></p>
                 </form>
@@ -73,30 +73,8 @@
 
 </div>
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 <script type="text/javascript" src="js/bootstrap.min.js"></script>
-
-<script type="text/javascript">
-
-    $(document).ready(function() {
-        $('#issue-password').keyup(function() {
-
-            var empty = false;
-            $('#issue-password').each(function() {
-                if ($(this).val().length == 0) {
-                    empty = true;
-                }
-            });
-
-            if (empty) {
-                $('#issueButton').attr('disabled', 'disabled');
-            } else {
-                $('#issueButton').removeAttr('disabled');
-            }
-        });
-    });
-
-</script>
 
 </body>
 </html>

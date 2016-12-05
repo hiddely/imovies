@@ -83,7 +83,6 @@ Vagrant.configure("2") do |config|
 
   config.vm.provision "file", source: "./keys/id_rsa.pub", destination: "/home/vagrant/.ssh/id_rsa.pub"
   config.vm.provision "file", source: "./keys/bak_rsa.pub.pem", destination: "/home/vagrant/.ssh/bak_rsa.pub.pem"
-  config.vm.provision "shell", path: "hardening.sh"
 
   config.vm.provision "shell", inline: <<-SHELL
     #sudo sysctl kernel.hostname=database
@@ -114,6 +113,18 @@ Vagrant.configure("2") do |config|
     cp /home/vagrant/sshd_config /etc/ssh/sshd_config
     rm /home/vagrant/sshd_config
     service ssh restart
+  SHELL
+
+  config.vm.provision "file", source: "./pre_up_iptables", destination: "~/networking/pre_up_iptables"
+  config.vm.provision "file", source: "./iptables", destination: "~/networking/iptables"
+  config.vm.provision "file", source: "./interfaces", destination: "~/networking/interfaces"
+
+  config.vm.provision "shell", path: "move_config.sh", privileged: true
+
+  config.vm.provision "shell", inline: <<-SHELL
+      sudo sysctl -p
+      chmod 755 /etc/network/if-pre-up.d/iptables
+      sudo /etc/network/if-pre-up.d/iptables
   SHELL
 
   ## Remove user vagrant from sudoers file
